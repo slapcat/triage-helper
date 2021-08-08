@@ -33,6 +33,9 @@ $sec = "300"; // refresh every 5 mins
 
 // OPEN CSV
 $row = 1;
+$agents = "";
+$out = "";
+
 if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/download/IMCCS_hours.csv", "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
@@ -49,8 +52,8 @@ if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/downlo
 	} else {
 	$timein = 8; // Use weekday time
 	}
-	$buffertime = $data[$timein] - 2;
-	$timeout = $data[$timein] + 8.5;
+	$buffertime = ((int)$data[$timein] - (int)2);
+	$timeout = ((int)$data[$timein] + (int)8.5);
 
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
