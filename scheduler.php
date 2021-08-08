@@ -1,6 +1,5 @@
 <?php
 // RESET THE OUT LIST
-#$reset = shell_exec('sed -i "s/#//" /var/www/html/nextcloud/data/jake/files/IMCCS_hours.csv');
 $reset = shell_exec('sed -i "s/#//" ' . getenv('CSV_LOCAL'));
 
 
