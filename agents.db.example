@@ -1,0 +1,4 @@
+name,mon,tues,wed,thurs,fri,sat,sun,time,time (weekend),agentID,expertise,time off
+Tom,1,1,1,1,1,0,0,6,0,agent%3A,"Billing","11/3,"
+Dick,0,1,1,1,1,1,0,6,6,agent%3B,"Billing, Platform","12/5,"
+Harry,0,0,1,1,1,1,1,8,6,agent%3C,"Technical, Platform","1/23,7/8,"
