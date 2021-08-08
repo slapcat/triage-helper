@@ -29,6 +29,8 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 
 // MARK OUT
 foreach ($out as $name) {
+	$name = escapeshellcmd($name);
+	$name = str_replace(' ', '', $name);
 	$set = shell_exec('sed -i "s/' . $name . '/#' . $name . '/" ' . getenv('CSV_LOCAL'));
 }
 ?>
