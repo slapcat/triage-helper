@@ -6,106 +6,16 @@ $sec = "300"; // refresh every 5 mins
 <html>
 <head>
 <meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
-<style>
-body {
-	font-family:Helvetica,Arial;
-	font-size:30px;
-	background-color:white;
-}
-
-.tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted dodgerblue;
-}
-
-.tooltip .tooltiptext {
-  font-size: small;
-  visibility: hidden;
-  width: auto;
-  background-color: dodgerblue;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 7px;
-  position: absolute;
-  margin-left: 15px;
-  margin-top: 2px;
-  z-index: 1;
-  white-space: nowrap;
-}
-
-.tooltip .tooltiptext::after {
-  content: " ";
-  position: absolute;
-  top: 50%;
-  right: 100%;
-  margin-top: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent dodgerblue transparent transparent;
-}
-
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-}
-
-.names {
-	margin: 0 100px;
-}
-.names a {
-	text-decoration: none;
-	color: black;
-}
-.names a:hover {
-	color: #0096FF;
-}
-
-
-.out a {
-	text-decoration: none;
-	color: red;
-}
-.out a:hover {
-	text-decoration: underline;
-}
-
-#agents {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-#agents td, #agents th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
-#agents tr:nth-child(even){background-color: #f2f2f2;}
-
-#agents tr:hover {background-color: #ddd;}
-
-#agents th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #04AA6D;
-  color: white;
-}
-
-#agent-table { display: block; }
-#agent-list { display: none; }
-</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>Triage Helper</title>
 </head>
+<body>
+<h2>Please assign tickets to...</h2>
 
-<body><h2>Please assign tickets to...</h2>
-
-        <select id="sel" onchange="toggle()" style="top:10px;right:10px;position:absolute;z-index=2">
+        <!-- select id="sel" onchange="toggle()" style="top:10px;right:10px;position:absolute;z-index=2">
             <option value="1" selected>Table</option>
             <option value="2">Pop-Up</option>
-        </select>
-
-<div class="names">
+        </select -->
 
 <div id="agent-table" style="display:block">
 <table id="agents" class="agent-table">
@@ -118,7 +28,7 @@ body {
     <th>Agent</th>
     <th>Expertise</th>
   </tr>
-</div>
+
 <?php
 
 // OPEN CSV
@@ -127,7 +37,7 @@ if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/downlo
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
-	
+
 	// DEFINE TIMES
 	$weekday = date( 'N' );  // Mon (1) - Sun (7)
 	$hour = date( 'G' ); // 24hr digit
@@ -148,17 +58,19 @@ if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/downlo
 		$out = $out . " " . '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . substr($data[0], 1) . '</a>';
 		} else {
 		//$agents = $agents . '<br /><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank"><div class="tooltip">' . $data[0] . '<span class="tooltiptext">' . $data[11] . '</span></div></a>';
-		$agents = $agents . '<div id="agent-list"><br /><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank"><div class="tooltip">' . $data[0] . '<span class="tooltiptext">' . $data[11] . '</span></div></a></div>' . '<div id="agent-table"><tr><td><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $data[0] . '</a></td><td>' . $data[11] . '</td></tr></div>';
+		$agents = $agents . '<tr><td><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $data[0] . '</a></td><td>' . $data[11] . '</td></tr>';
+
 		}
 	}
     }
     fclose($handle);
 }
 
-echo $agents . '</div><div id="agent-table"></tbody></table></div><div class="out">';
+// PRINT ACTIVE AGENTS
+echo $agents . '</tbody></table></div>';
 
 if ($out != "") {
-	echo "<br /><br /><font color=\"red\"><b>Currently out:<br />";
+	echo "<br /><div class=\"out\"><font color=\"red\"><b>Currently out:<br />";
 	echo $out . "</b></font>";
 }
 ?>
@@ -168,16 +80,4 @@ if ($out != "") {
 <a href="https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f" target="_blank" style="color:#0096FF;font-size:22px;">Edit Schedule</a>
 
 </body>
-<script>
-    function toggle() {
-        var cont = document.getElementById('agent-table');
-        if (cont.style.display == 'block') {
-            cont.style.display = 'none';
-        }
-        else {
-            cont.style.display = 'block';
-        }
-    }
-</script>
-
 </html>
