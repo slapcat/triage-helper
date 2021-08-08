@@ -1,7 +1,8 @@
 <?php
 // RESET THE OUT LIST
 $reset = shell_exec('sed -i "s/#//" ' . getenv('CSV_LOCAL'));
-
+$yesterday = date("n/j",strtotime("-1 days")) . ",";
+$removeOldDays = shell_exec('sed -i "s=' . $yesterday  . '==g" ' . getenv('CSV_LOCAL'));
 
 // FIND WHO IS OUT
 $row = 1;
@@ -14,7 +15,7 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 
 	// CHECK DATES
 	$dates = explode(",", $data[12]);
-	$today = date("j/n");
+	$today = date("n/j");
 
 	for ($i = 0; $i < count($dates); $i++) {
 		if (strpos($dates[$i], $today) !== false) {
