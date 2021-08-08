@@ -36,7 +36,7 @@ $row = 1;
 $agents = "";
 $out = "";
 
-if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/download/IMCCS_hours.csv", "r")) !== FALSE) {
+if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -80,7 +80,7 @@ if ($out != "") {
 </div>
 
 <br /><br />
-<a href="https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f" target="_blank" style="color:#0096FF;font-size:22px;">Edit Schedule</a>
+<a href="<?php echo getenv('CSV_URL') ?>" target="_blank" style="color:#0096FF;font-size:22px;">Edit Schedule</a>
 
 </body>
 </html>

@@ -1,13 +1,14 @@
 <?php
 // RESET THE OUT LIST
-$reset = shell_exec('sed -i "s/#//" /var/www/html/nextcloud/data/jake/files/IMCCS_hours.csv');
+#$reset = shell_exec('sed -i "s/#//" /var/www/html/nextcloud/data/jake/files/IMCCS_hours.csv');
+$reset = shell_exec('sed -i "s/#//" ' . getenv('CSV_LOCAL'));
 
 
 // FIND WHO IS OUT
 $row = 1;
 $out = array();
 
-if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/download/IMCCS_hours.csv", "r")) !== FALSE) {
+if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -28,6 +29,6 @@ if (($handle = fopen("https://box.nabasny.com/index.php/s/3swmBMxZYEZaB2f/downlo
 
 // MARK OUT
 foreach ($out as $name) {
-	$set = shell_exec('sed -i "s/' . $name . '/#' . $name . '/" /var/www/html/nextcloud/data/jake/files/IMCCS_hours.csv');
+	$set = shell_exec('sed -i "s/' . $name . '/#' . $name . '/" ' . getenv('CSV_LOCAL'));
 }
 ?>
