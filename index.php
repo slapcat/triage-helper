@@ -57,14 +57,18 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
-		if (substr($data[0], 0, 1) == '#') {
-		$out = $out . " " . '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . substr($data[0], 1) . '</a>';
-		} else {
+		if (substr($data[0], 0, 1) !== '#') {
 		//$agents = $agents . '<br /><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank"><div class="tooltip">' . $data[0] . '<span class="tooltiptext">' . $data[11] . '</span></div></a>';
 		$agents = $agents . '<tr><td><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $data[0] . '</a></td><td>' . $data[11] . '</td></tr>';
-
 		}
 	}
+
+	// CHECK IF OUT FOR THE DAY
+	if (substr($data[0], 0, 1) == '#') {
+		$out = $out . " " . '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . substr($data[0], 1) . '</a>';
+	}
+
+
     }
     fclose($handle);
 }
