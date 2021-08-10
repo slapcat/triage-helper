@@ -15,7 +15,6 @@ This tool currently supports:
 
 To be added in the future:
 
-* Automagically update time off column
+* Integrate with Freshdesk API (list open tickets, CSAT, etc.)
 * Integrate time off with SharePoint calendars
-* Display agent's current ticket statistics
 * Better database management

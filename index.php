@@ -52,8 +52,8 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 	} else {
 	$timein = 8; // Use weekday time
 	}
-	$buffertime = ((int)$data[$timein] - (int)2);
-	$timeout = ((int)$data[$timein] + (int)8.5);
+	$buffertime = ($data[$timein] - 2);
+	$timeout = ($data[$timein] + 8.5);
 
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
