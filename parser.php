@@ -32,17 +32,14 @@ if($emails)
 	    fclose($handle);
 	}
 
-
 // find overlap between subject and agent names
 // [ARRAY cannot account for spaces between first name and last initial]
 //$requester = array_intersect($agents, $subject);
 //$requester = array_values($requester); // reset index numbers
 foreach ($agents as $name) {
-
 	if (strpos($subject, $name) !== false) {
 	    $requester = $name;
 	}
-
 }
 
 // parse message body
@@ -94,13 +91,9 @@ $addLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/$/\"/" ' . getenv
 // This is a change of date that needs to be updated manually.
 }
 
-
  }
 }
 
 imap_expunge($inbox);
 imap_close($inbox);
-
-
-print_r(get_defined_vars());
 ?>
