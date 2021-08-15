@@ -51,7 +51,7 @@ $message = strip_tags($message, '');
 $message = preg_replace("/\s+/", " ", $message);
 
 // grab start and end dates
-$msg1 = explode('Location: Start Time: ', $message);
+$msg1 = explode('Start Time: ', $message);
 $msg2 = explode(' ', $msg1[1]);
 
 // determine date span of time off
@@ -78,6 +78,7 @@ $removeLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/\"$//" ' . get
 
 	foreach ($timeoff as $date) {
 	$added = shell_exec('sed -i "\=^\(' . $requester . '\)=s=$=' . $date . ',=" ' . getenv('CSV_LOCAL'));
+	imap_delete($inbox,$msg_number);
 	}
 
 $addLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/$/\"/" ' . getenv('CSV_LOCAL'));
@@ -86,17 +87,20 @@ $addLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/$/\"/" ' . getenv
 
 	foreach ($timeoff as $date) {
 	$deleted = shell_exec('sed -i "\=^\(' . $requester . '\)=s=' . $date . ',==" ' . getenv('CSV_LOCAL'));
+	imap_delete($inbox,$msg_number);
 	}
 
 } else {
 // This is a change of date that needs to be updated manually.
 }
 
-imap_delete($inbox,$msg_number);
 
  }
 }
 
 imap_expunge($inbox);
 imap_close($inbox);
+
+
+print_r(get_defined_vars());
 ?>
