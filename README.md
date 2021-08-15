@@ -9,6 +9,7 @@ This tool currently supports:
 * List available agents by the hour
 * Display agent's expertise
 * Highlight agents who are on planned leave or out unexpectedly
+* Time off integrated with SharePoint calendar
 * Automatically refresh page every 5 minutes
 
 ## Roadmap
@@ -16,5 +17,4 @@ This tool currently supports:
 To be added in the future:
 
 * Integrate with Freshdesk API (list open tickets, CSAT, etc.)
-* Integrate time off with SharePoint calendars
 * Better database management
