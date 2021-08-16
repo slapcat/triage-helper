@@ -20,9 +20,9 @@ It also checks to see if they are off by searching for a `#` in front of their n
 
 The following additional scripts help with scheduling:
 
-`scheduler.php` - Resets which agents are off for the day by removing all `#` before their names. It then checks which agents are off today and places the `#` before their name so that `index.php` interprets them as out for the day.
+* `scheduler.php` - Resets which agents are off for the day by removing all `#` before their names. It then checks which agents are off today and places the `#` before their name so that `index.php` interprets them as out for the day.
 
-`parser.php` - Scans a mailbox for alerts from a SharePoint calendar. Parses the email to determine which agent it is for and the dates they have requested off. It then adds or removes these dates (depending on the request) to `agents.db`. This script currently only supports events that are added or deleted to the calendar, not changed.
+* `parser.php` - Scans a mailbox for alerts from a SharePoint calendar. Parses the email to determine which agent it is for and the dates they have requested off. It then adds or removes these dates (depending on the request) to `agents.db`. This script currently only supports events that are added or deleted to the calendar, not changed.
 
 ## Roadmap
 
