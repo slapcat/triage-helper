@@ -73,8 +73,12 @@ if(strpos($message, "added") !== false) {
 
 $removeLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/\"$//" ' . getenv('CSV_LOCAL'));
 
+//$file = file_get_contents(getenv('CSV_LOCAL'));
+
 	foreach ($timeoff as $date) {
 	$added = shell_exec('sed -i "\=^\(' . $requester . '\)=s=$=' . $date . ',=" ' . getenv('CSV_LOCAL'));
+	//$pattern = '#^(' . $requester . '.*),"$#i';
+	//echo preg_replace($pattern, '${1},' . $date . ',', $file);
 	imap_delete($inbox,$msg_number);
 	}
 
@@ -82,8 +86,12 @@ $addLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/$/\"/" ' . getenv
 
 } elseif (strpos($message, "deleted") !== false) {
 
+//$file = file_get_contents(getenv('CSV_LOCAL'));
+
 	foreach ($timeoff as $date) {
 	$deleted = shell_exec('sed -i "\=^\(' . $requester . '\)=s=' . $date . ',==" ' . getenv('CSV_LOCAL'));
+	//$pattern = '#^(' . $requester . '.*)' . $date . ',(.*)$#i';
+	//echo preg_replace($pattern, "$1$2", $file);
 	imap_delete($inbox,$msg_number);
 	}
 
