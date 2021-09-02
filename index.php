@@ -12,7 +12,7 @@ $sec = "300"; // refresh every 5 mins
 </head>
 
 <body>
-<div class="title" style="margin-top:35px;"><font size="12px">Please assign tickets to...</font>
+<div class="title" style="margin-top:38px;"><font size="12px">Please assign tickets to...</font>
 <div class="dropdown">
   <button onclick="myFunction()" class="dropbtn">✎</button>
   <div id="myDropdown" class="dropdown-content">
