@@ -18,7 +18,7 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 	$today = date("n/j");
 
 	for ($i = 0; $i < count($dates); $i++) {
-		if (strpos($dates[$i], $today) !== false) {
+		if ($dates[$i] == $today) {
 			$out[] = $data[0];
 		}
 	}
