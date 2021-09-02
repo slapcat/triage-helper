@@ -154,7 +154,7 @@ function checkDuties($duty, $name)
 var table = new Tabulator("#full-table", {
     data:tabledata,
     layout:"fitColumns",
-
+    movableColumns:true,
 columns:[
         {title:"Agent", field:"agent", width:100, formatter:"link", formatterParams:{urlField:"tickets",target:"_blank",}},
         {title:"Expertise", field:"expertise", headerFilter:"input"},
