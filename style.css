@@ -5,10 +5,31 @@ body {
 	background-color:lightgrey;
 }
 
+.out-banner a {
+	color:white;
+	margin: 0 5px;
+}
+.out-banner a:hover {
+	color:black;
+}
+
+.out-banner {
+	color:white;
+	background-color:red;
+	top:0;
+	left:0;
+	font-size: 16px;
+	font-weight: bold;
+	width:100%;
+	position:absolute;
+	padding-top: 12px;
+	text-align: center;
+}
+
 .dropbtn {
   background-color: lightgrey;
   color: #0E0B16;
-  font-size: 42px;
+  font-size: 38px;
   padding: 0 15px;
   border: none;
   cursor: pointer;
@@ -46,7 +67,7 @@ body {
 
 .show {display: block;}
 
-.title { text-align:left; margin-bottom: 5px;}
+title { text-align:left; margin-bottom: 5px;}
 
 .tooltip {
   position: relative;
