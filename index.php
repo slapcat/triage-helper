@@ -12,12 +12,35 @@ $sec = "300"; // refresh every 5 mins
 <title>Triage Helper</title>
 </head>
 <body>
-<h2>Please assign tickets to...</h2>
+<div class="title"><font size="16px">Please assign tickets to...</font>
+<div class="dropdown">
+  <button onclick="myFunction()" class="dropbtn">✎</button>
+  <div id="myDropdown" class="dropdown-content">
+    <a href="<?php echo getenv('CSV_URL') ?>" target="_blank">Schedule</a>
+    <a href="<?php echo getenv('DUTIES_URL') ?>" target="_blank">Duties</a>
+  </div>
+</div></div>
+<script>
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
 
-        <!-- select id="sel" onchange="toggle()" style="top:10px;right:10px;position:absolute;z-index=2">
-            <option value="1" selected>Table</option>
-            <option value="2">Pop-Up</option>
-        </select -->
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+</script>
 
 <div id="full-table"></div>
 
@@ -131,7 +154,7 @@ var table = new Tabulator("#full-table", {
 
 columns:[                 //define the table columns
         {title:"Agent", field:"agent", width:100},
-        {title:"Expertise", field:"expertise"},
+        {title:"Expertise", field:"expertise", headerFilter:"input"},
         {title:"Phones", field:"phones", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
         {title:"Triage", field:"triage", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
         {title:"Chat", field:"chat", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
@@ -146,7 +169,5 @@ if ($out != "") {
 	echo $out . "</b></font>";
 }
 ?>
-<br /><br />
-<a href="<?php echo getenv('CSV_URL') ?>" target="_blank" style="color:#0096FF;font-size:22px;">Edit Schedule</a>
 </body>
 </html>
