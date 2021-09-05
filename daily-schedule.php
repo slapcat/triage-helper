@@ -19,8 +19,6 @@ $sweeper = "";
 // DEFINE TIMES
 $weekday = date( 'N' );  // Mon (1) - Sun (7)
 
-$weekday = 1; // TESTING
-
 // LOAD THE CURRENT LINE UP
 if (($handle = fopen(getenv('DUTIES_DL'), "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
