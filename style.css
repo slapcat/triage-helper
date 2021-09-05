@@ -48,6 +48,7 @@ body {
 
 .dropdown-content {
   display: none;
+  font-size: 16px;
   position: absolute;
   background-color: lightgrey;
   min-width: 160px;
@@ -138,9 +139,9 @@ a:hover {
   padding: 8px;
 }
 
-#agents tr:nth-child(even){background-color: #f2f2f2;}
+#agents tr {background-color: #f2f2f2;}
 
-#agents tr:hover {background-color: #ddd;}
+#DISABLEagents tr:hover {background-color: #ddd;}
 
 #agents th {
   padding-top: 12px;
@@ -149,6 +150,8 @@ a:hover {
   background-color: #04AA6D;
   color: white;
 }
+
+#agents caption { font-weight:bold; }
 
 #agent-table { display: block; }
 
