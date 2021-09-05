@@ -129,7 +129,7 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 
 	// CHECK IF OUT FOR THE DAY
 	if (substr($data[0], 0, 1) == '#') {
-		$out = $out . " " .
+		$out = $out . "  " .
 		'<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
 		$data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . substr($data[0], 1) . '</a>';
 	}
@@ -167,7 +167,7 @@ columns:[
 </script>
 <?php
 if ($out != "") {
-	echo "<div class=\"out-banner\">Currently out: " . $out . '</div>';
+	echo "<div class=\"out-banner\">Currently out:  " . $out . '</div>';
 }
 ?>
 </body>
