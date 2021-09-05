@@ -6,11 +6,15 @@ Triage Helper is a tool to assist with sorting and assigning support tickets in 
 
 This tool currently supports:
 
-* List available agents by the hour
-* Display agent's expertise
+* List available agents and assigned duties
+* Filter agents by expertise
 * Highlight agents who are on planned leave or out unexpectedly
 * Time off integrated with SharePoint calendar
-* Automatically refresh page every 5 minutes
+* Compatible with Microsoft Teams
+
+## Screenshot
+
+![Screenshot](https://github.com/jnabasny/triage-helper/blob/master/screenshot.png)
 
 ## How It Works
 
