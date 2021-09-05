@@ -125,6 +125,10 @@ if (($handle = fopen(getenv('DUTIES_DL'), "r")) !== FALSE) {
 </table>
 
 </center>
+
+<br />
+<a href="index.php" style="font-size:16px;">☚ back to live view</a>
+
 </div>
 </body>
 </html>
