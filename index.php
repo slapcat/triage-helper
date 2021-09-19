@@ -113,7 +113,12 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 
 	// DEFINE IN & OUT TIMES
 	$buffertime = ($data[$timein] - 2);
-	$timeout = ($data[$timein] + 8.5);
+	$timeout = ($data[$timein] + 7.5); // remove name an hour before end of shift
+	$tomorrow = $weekday + 1;
+	if ($tomorrow == 8) {
+	$tomorrow = 1;
+	$timein = 8;
+	}
 
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
@@ -127,6 +132,16 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 		$data[10] . '&q[]=status%3A%5B0%5D&ref=256627"},';
 		}
 	}
+
+	// CHECK IF WORKING TOMORROW MORNING
+	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein] == 6 || $data[$timein] == 8)) {
+		if (substr($data[0], 0, 1) !== '#') {
+		$agents = $agents . '{agent:"' . $data[0] . '", expertise:"' . $data[11] .
+		'", phones:0, triage:0, chat:0, sweeper:0, tickets:"https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
+		$data[10] . '&q[]=status%3A%5B0%5D&ref=256627"},';
+		}
+	}
+
 
 	// CHECK IF OUT FOR THE DAY
 	if (substr($data[0], 0, 1) == '#') {
