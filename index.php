@@ -138,9 +138,10 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 	$buffertime = ($data[$timein] - 2);
 	$timeout = ($data[$timein] + 7.5); // remove name an hour before end of shift
 	$tomorrow = $weekday + 1;
+	$timein_tmrw = $timein;
 	if ($tomorrow == 8) {
 		$tomorrow = 1;
-		$timein = 8;
+		$timein_tmrw = 8;
 	}
 	$tmrwdate = date("n/j",strtotime("+1 days")) . ",";
 
@@ -153,7 +154,7 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 	}
 
 	// CHECK IF WORKING TOMORROW MORNING
-	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein] == 6 || $data[$timein] == 8)) {
+	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
 
 		// CHECK IF SCHEDULED OUT FOR TOMORROW
 		if (strpos($dates[12], $tmrwdate) !== false) {
