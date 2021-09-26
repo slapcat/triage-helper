@@ -19,6 +19,7 @@ $sec = "300"; // refresh every 5 mins
     <a href="daily-schedule.php">Daily Schedule</a>
     <a href="<?php echo getenv('CSV_URL') ?>" target="_blank">Edit Schedule</a>
     <a href="<?php echo getenv('DUTIES_URL') ?>" target="_blank">Edit Duties</a>
+    <a onClick="Confirm()">Reset Duties</a>
   </div>
 </div></div>
 
@@ -39,6 +40,13 @@ window.onclick = function(event) {
     }
   }
 }
+
+function Confirm() {
+  var r = confirm("WARNING! This will reset all assigned duties to the defaults. Press OK if you are sure you want to proceed.");
+  if (r == true) {
+    window.location.replace("reset_duties.php");
+  }
+}
 </script>
 
 <div id="full-table"></div>
@@ -49,8 +57,9 @@ var tabledata = [
 
 // DEFINE VARIABLES
 $row = 1;
-$agents = "";
-$out = "";
+$agents = array();
+$links = array();
+$out = array();
 $phones = "";
 $triage = "";
 $chat = "";
@@ -69,7 +78,14 @@ if ($weekday > 5) {
 }
 
 // LOAD THE CURRENT LINE UP
-if (($handle = fopen(getenv('DUTIES_DL'), "r")) !== FALSE) {
+$file = './lineups/' . date('M-j-Y') . '.csv';
+if (!file_exists($file)) {
+	$duties = file_get_contents(getenv('DUTIES_DL'));
+	file_put_contents($file, $duties);
+}
+
+
+if (($handle = fopen($file, "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -103,6 +119,13 @@ if (($handle = fopen(getenv('DUTIES_DL'), "r")) !== FALSE) {
    fclose($handle);
 }
 
+// CONVERT DUTIES TO ARRAYS
+$phones = explode(",", $phones);
+$triage = explode(",", $triage);
+$chat = explode(",", $chat);
+$sweeper = explode(",", $sweeper);
+
+
 // CHECK THE SCHEDULE
 $row=1;
 
@@ -124,13 +147,8 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
 		if (substr($data[0], 0, 1) !== '#') {
-		//list - $agents = $agents . '<br /><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank"><div class="tooltip">' . $data[0] . '<span class="tooltiptext">' . $data[11] . '</span></div></a>';
-		//table - $agents = $agents . '<tr><td><a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' . $data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $data[0] . '</a></td><td>' . $data[11] . '</td></tr>';
-		$agents = $agents . '{agent:"' . $data[0] . '", expertise:"' . $data[11] . '", phones:' .
-		checkDuties($phones, $data[0]) . ', triage:' . checkDuties($triage, $data[0]) . ', chat:' .
-		checkDuties($chat, $data[0]) . ', sweeper:' . checkDuties($sweeper, $data[0]) .
-		', tickets:"https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-		$data[10] . '&q[]=status%3A%5B0%5D&ref=256627"},';
+			$agents[$data[0]] = $data[11];
+			$links[$data[0]] = $data[10];
 		}
 	}
 
@@ -141,18 +159,16 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 		if (strpos($dates[12], $tmrwdate) !== false) {
 			// AGENT IS OFF TOMORROW
 		} else {
-			$agents = $agents . '{agent:"' . $data[0] . '", expertise:"' . $data[11] .
-			'", phones:0, triage:0, chat:0, sweeper:0, tickets:"https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-			$data[10] . '&q[]=status%3A%5B0%5D&ref=256627"},';
+			$agents[$data[0]] = $data[11];
+			$links[$data[0]] = $data[10];
 		}
 	}
 
 
 	// CHECK IF OUT FOR THE DAY
 	if (substr($data[0], 0, 1) == '#') {
-		$out = $out . "  " .
-		'<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-		$data[10] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . substr($data[0], 1) . '</a>';
+		$out[] = substr($data[0], 1);
+		$links[substr($data[0], 1)] = $data[10];
 	}
 
 
@@ -160,15 +176,87 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
     fclose($handle);
 }
 
-// PRINT ACTIVE AGENTS
-echo $agents;
 
-// FUNCTION FOR CHECKING CURRENT DUTIES
+// REPLACE AGENTS WHO ARE OUT FOR DUTIES
+if (!empty($out)) {
+	$replace = array();
+	$replace["phones"] = array_intersect($phones, $out);
+	$replace["triage"] = array_intersect($triage, $out);
+	$replace["chat"] = array_intersect($chat, $out);
+	$replace["sweeper"] = array_intersect($sweeper, $out);
+
+	foreach ($replace as $task => $names) {
+		foreach ($names as $name) {
+			// remove out person
+			$key = array_search($name, $$task);
+			unset($$task[$key]);
+	    		array_values($$task);
+
+			// add random person
+			if ($task == "triage" || $task == "sweeper") {
+				while (in_array($rand_agent, $phones) && in_array($rand_agent, $chat)) {
+					while (in_array($rand_agent, $$task)) {
+					$rand_agent = array_rand($agents, 1);
+					}
+				}
+				$$task[] = $rand_agent;
+				replaceAgent($name, $rand_agent, $task, $file);
+			} else {
+				while (in_array($rand_agent, $$task)) {
+					$rand_agent = array_rand($agents, 1);
+				}
+				$$task[] = $rand_agent;
+				replaceAgent($name, $rand_agent, $task, $file);
+			}
+		}
+	}
+}
+
+// PRINT ACTIVE AGENTS
+foreach ($agents as $name => $exp) {
+
+echo '{agent:"' . $name . '", expertise:"' . $exp . '", phones:' .
+                checkDuties($phones, $name) . ', triage:' . checkDuties($triage, $name) . ', chat:' .
+                checkDuties($chat, $name) . ', sweeper:' . checkDuties($sweeper, $name) .
+                ', tickets:"https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
+                $links[$name] . '&q[]=status%3A%5B0%5D&ref=256627"},';
+
+
+}
+
+
+// CUSTOM FUNCTIONS
 function checkDuties($duty, $name)
 {
-	if (strpos($duty, $name) !== false) {
+	if (in_array($name, $duty)) {
 	    return 1;
 	} else { return 0; }
+}
+
+function replaceAgent($name, $rand_agent, $task, $file)
+{
+$weekday = date('N');
+$duties = file_get_contents($file);
+switch ($task) {
+    case "phones":
+	$task_num = 1;
+        break;
+    case "triage":
+	$task_num = 2;
+        break;
+    case "chat":
+	$task_num = 3;
+        break;
+    case "sweeper":
+	$task_num = 4;
+        break;
+}
+
+$pattern = '/(' . $weekday . ',.*,' . $task_num . ',.*)' . $name . '(.*)/i';
+$replace = '$1' . $rand_agent . '$2';
+$new = preg_replace($pattern, $replace, $duties);
+file_put_contents($file, $new);
+mail("jake.nabasny@ingrammicro.com","TRIAGE ALERT","AGENT REPLACEMENT\n\n$name has been replaced by $rand_agent for $task.\n\nPlease notify new agent as soon as possible.","From: triage@nabasny.com");
 }
 ?>
 ];
@@ -187,8 +275,15 @@ columns:[
 });
 </script>
 <?php
-if ($out != "") {
-	echo "<div class=\"out-banner\">Currently out:  " . $out . '</div>';
+if (!empty($out)) {
+	echo "<div class=\"out-banner\">Currently out:  ";
+
+	foreach ($out as $name) {
+	echo '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
+		$links[$name] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $name . '</a>';
+	}
+
+	echo '</div>';
 }
 ?>
 </body>
