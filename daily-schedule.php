@@ -20,7 +20,7 @@ $sweeper = "";
 $weekday = date( 'N' );  // Mon (1) - Sun (7)
 
 // LOAD THE CURRENT LINE UP
-if (($handle = fopen(getenv('DUTIES_DL'), "r")) !== FALSE) {
+if (($handle = fopen('lineups/' . date('M-j-Y') . '.csv', "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;

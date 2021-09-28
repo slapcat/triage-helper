@@ -177,7 +177,6 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
     fclose($handle);
 }
 
-
 // REPLACE AGENTS WHO ARE OUT FOR DUTIES
 if (!empty($out)) {
 	$replace = array();
@@ -186,31 +185,73 @@ if (!empty($out)) {
 	$replace["chat"] = array_intersect($chat, $out);
 	$replace["sweeper"] = array_intersect($sweeper, $out);
 
+	$allAgents = $agents;
+	shuffle_assoc($agents);
+	shuffle_assoc($allAgents);
+
 	foreach ($replace as $task => $names) {
+
 		foreach ($names as $name) {
 			// remove out person
 			$key = array_search($name, $$task);
 			unset($$task[$key]);
 	    		array_values($$task);
 
+
 			// add random person
-			if ($task == "triage" || $task == "sweeper") {
-				while (in_array($rand_agent, $phones) && in_array($rand_agent, $chat)) {
-					while (in_array($rand_agent, $$task)) {
-					$rand_agent = array_rand($agents, 1);
-					}
+			foreach ($agents as $agent => $exp) {
+
+			    // check for a ringer (not on any other duties)
+			    if (array_intersect($agent, $phones) == NULL && array_intersect($agent, $triage) == NULL && array_intersect($agent, $chat) == NULL && array_intersect($agent, $sweeper) == NULL) {
+                            $ringer = $agent;
+			    break;
 				}
-				$$task[] = $rand_agent;
-				replaceAgent($name, $rand_agent, $task, $file);
-			} else {
-				while (in_array($rand_agent, $$task)) {
-					$rand_agent = array_rand($agents, 1);
-				}
-				$$task[] = $rand_agent;
-				replaceAgent($name, $rand_agent, $task, $file);
+
+			    // don't consider if on two other jobs already
+			    $i=0;
+			    foreach($replace as $duty => $replacableNames) {
+			            if (array_intersect($agent, $$duty) == TRUE) {
+			            $i++;
+			            }
+			    }
+
+			    if ($i >= 2) {
+			        unset($agents[$agent]);
+			    }
+
+			    // if on chat or phones already, don't let both be assigned
+			    if ($task == "chat" || $task = "phones") {
+			        if (array_intersect($agent, $phones) == TRUE && $task = "chat") {
+			            unset($agents[$agent]);
+			        } elseif (array_intersect($agent, $chat) == TRUE && $task = "phones") {
+			            unset($agents[$key]);
+			        }
+			    }
 			}
+
+
+ 			// grab an agent from the remaining
+			    if ($ringer != "") {
+				$$task[] = $ringer;
+				unset($agents[$ringer]);
+				replaceAgent($name, $ringer, $task, $file);
+				} elseif ($agents != NULL) {
+			    $replacement = array_key_first($agents);
+        	                    $$task[] = $replacement;
+					unset($agents[$replacement]);
+	                            replaceAgent($name, $replacement, $task, $file);
+			    } else {
+			    $replacement = array_key_first($allAgents);
+        	                    $$task[] = $replacement;
+					unset($agents[$replacement]);
+	                            replaceAgent($name, $replacement, $task, $file);
+			    }
+
 		}
 	}
+
+$agents = $allAgents;
+
 }
 
 // PRINT ACTIVE AGENTS
@@ -236,7 +277,7 @@ function checkDuties($duty, $name)
 
 function replaceAgent($name, $rand_agent, $task, $file)
 {
-$weekday = date('N');
+global $weekday;
 $duties = file_get_contents($file);
 switch ($task) {
     case "phones":
@@ -257,7 +298,26 @@ $pattern = '/(' . $weekday . ',.*,' . $task_num . ',.*)' . $name . '(.*)/i';
 $replace = '$1' . $rand_agent . '$2';
 $new = preg_replace($pattern, $replace, $duties);
 file_put_contents($file, $new);
-mail("jake.nabasny@ingrammicro.com","TRIAGE ALERT","AGENT REPLACEMENT\n\n$name has been replaced by $rand_agent for $task.\n\nPlease notify new agent as soon as possible.","From: triage@nabasny.com");
+
+$headers  = 'MIME-Version: 1.0' . "\r\n";
+$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+$headers .= 'From: triage@nabasny.com';
+$message = "<html><body style=\"font-family:Helvetica,Arial;font-size:18px;\"><h1>AGENT REPLACEMENT</h1><b>$name</b> has been replaced by <b><u>$rand_agent</u></b> for <i>$task</i>.<br /><br />Thank you for helping out the team!<br /><br />Find new shift information here: <a href=\"https://nabasny.com/triage/daily-schedule.php\">Daily Schedule</a></body></html>";
+mail("jake.nabasny@ingrammicro.com", "TRIAGE ALERT - $rand_agent", $message, $headers);
+}
+
+function shuffle_assoc(&$array) {
+$keys = array_keys($array);
+
+shuffle($keys);
+
+foreach($keys as $key) {
+    $new[$key] = $array[$key];
+}
+
+$array = $new;
+
+return true;
 }
 ?>
 ];
@@ -281,7 +341,7 @@ if (!empty($out)) {
 
 	foreach ($out as $name) {
 	echo '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-		$links[$name] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $name . '</a>';
+		$links[$name] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $name . '</a>  ';
 	}
 
 	echo '</div>';
