@@ -1,3 +1,10 @@
+<?php
+session_start();
+
+if ($_SESSION['auth'] != TRUE) {
+	header("Location: index.php");
+}
+?>
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="style.css">

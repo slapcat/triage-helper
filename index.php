@@ -1,4 +1,30 @@
 <?php
+session_start();
+
+if ($_SESSION['auth'] == TRUE) {
+	goto skip;
+}
+
+$pass = $_POST["pass"];
+
+if (empty($pass)) {
+
+	printf('<body style="background-color:lightgrey"><center><br /><br /><form name="input" action="index.php" method="POST"><label for="pass">Enter Password</label><br /><input name="pass" id="pass" type="password" class="formbox" placeholder="password" /><br /><br /><input name="submit" id="submit" type="submit" value="Login" /></form></center></body>');
+	die();
+
+} elseif ($pass == getenv('TRIAGE_TOOL_PW')) {
+
+	$_SESSION['auth'] = TRUE;
+
+} else {
+
+	echo '<body style="background-color:red"><center><h1 style="color:white;margin-top:20px;font-family:Helvetica;">WRONG PASSWORD</h1><br /><br /><tt><a href="index.php">[ click here to go back ]</a></tt></center></body>';
+	die();
+
+}
+
+skip:
+
 $page = $_SERVER['PHP_SELF'];
 $sec = "300"; // refresh every 5 mins
 ?>
