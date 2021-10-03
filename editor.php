@@ -14,6 +14,12 @@ if ($_SESSION['auth'] == "") {
 $file = $_GET['f'];
 $command = $_GET['c'];
 
+if ($command == "exit") {
+	unlink($file . '.lock');
+	header('Location: index.php');
+	exit();
+}
+
 if (isset($_POST['text']))
 {
     if (file_get_contents($file . '.lock') == $_SESSION['auth']) {
@@ -53,7 +59,7 @@ if (!file_exists($file . '.lock')) {
 <div id="buttons">
 <p style="float:left;text-align:left;"><input type="reset" value="Reset" />
 <input type="button" onclick="window.location.href='<?php echo $file ?>';" value="Download">
-<input type="button" onclick="window.location.href='index.php';" value="Exit"></p>
+<input type="button" onclick="window.location.href='editor.php?f=<?php echo $file ?>&c=exit';" value="Exit"></p>
 <p style="float:right;text-align:right"><input type="submit" value="Save" /></p>
 </div>
 <div style="clear: both;"></div>

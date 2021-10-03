@@ -51,8 +51,8 @@ $sec = "300"; // refresh every 5 mins
   <button onclick="myFunction()" class="dropbtn">✎</button>
   <div id="myDropdown" class="dropdown-content">
     <a href="daily-schedule.php">Daily Schedule</a>
-    <a href="<?php echo getenv('CSV_URL') ?>" target="_blank">Edit Schedule</a>
-    <a href="<?php echo getenv('DUTIES_URL') ?>" target="_blank">Edit Duties</a>
+    <a href="<?php echo getenv('CSV_URL') ?>">Edit Schedule</a>
+    <a href="<?php echo getenv('DUTIES_URL') ?>">Edit Duties</a>
     <a onClick="Confirm()">Reset Duties</a>
   </div>
 </div></div>
