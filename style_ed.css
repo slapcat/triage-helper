@@ -2,13 +2,30 @@ body {
 	background-color: lightgrey;
 	text-align: center;
 	font-family: Courier;
+	margin: 20px;
 }
 
 textarea {
 	padding: 10px;
 	width: 90%;
 	height: 90%;
-	margin: 20px;
 	border: 2px solid black;
 	font-size: 16px;
+}
+
+#buttons {
+	margin: 0 100px;
+}
+
+input {
+	padding: 10px;
+	border: 1px solid black;
+	border-radius: 0;
+	font-family: Courier;
+	font-size: 16px;
+}
+
+input:hover {
+	background-color: black;
+	color: white;
 }

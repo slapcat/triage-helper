@@ -42,7 +42,7 @@ if (!file_exists($file . '.lock')) {
 	$text = file_get_contents($file);
 	file_put_contents($file . '.lock', $_SESSION['auth']);
 } else {
-	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br />WARNING: Editing at the same time as another user may lead to data loss.";
+	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.";
 	exit();
 }
 
@@ -50,8 +50,14 @@ if (!file_exists($file . '.lock')) {
 <form action="" method="post">
 <textarea name="text"><?php echo $text; ?></textarea>
 <br />
-<input type="submit" value="Save" />
-<input type="reset" value="Reset" /></br />
+<div id="buttons">
+<p style="float:left;text-align:left;"><input type="reset" value="Reset" />
+<input type="button" onclick="window.location.href='<?php echo $file ?>';" value="Download">
+<input type="button" onclick="window.location.href='index.php';" value="Exit"></p>
+<p style="float:right;text-align:right"><input type="submit" value="Save" /></p>
+</div>
+<div style="clear: both;"></div>
 </form>
 </body>
 </html>
+
