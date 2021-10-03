@@ -1,7 +1,15 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
+
+ini_set('session.gc_maxlifetime', 43200);
+session_set_cookie_params(43200);
 session_start();
 
-if ($_SESSION['auth'] == TRUE) {
+if ($_SESSION['auth'] != "") {
 	goto skip;
 }
 
@@ -14,7 +22,7 @@ if (empty($pass)) {
 
 } elseif ($pass == getenv('TRIAGE_TOOL_PW')) {
 
-	$_SESSION['auth'] = TRUE;
+	$_SESSION['auth'] = session_id();
 
 } else {
 
@@ -106,7 +114,7 @@ if ($weekday > 5) {
 // LOAD THE CURRENT LINE UP
 $file = './lineups/' . date('M-j-Y') . '.csv';
 if (!file_exists($file)) {
-	$duties = file_get_contents(getenv('DUTIES_DL'));
+	$duties = file_get_contents(getenv('DUTIES_LOCAL'));
 	file_put_contents($file, $duties);
 }
 
@@ -155,7 +163,7 @@ $sweeper = explode(",", $sweeper);
 // CHECK THE SCHEDULE
 $row=1;
 
-if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
+if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -186,8 +194,14 @@ if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
 		if (strpos($dates[12], $tmrwdate) !== false) {
 			// AGENT IS OFF TOMORROW
 		} else {
-			$agents[$data[0]] = $data[11];
-			$links[$data[0]] = $data[10];
+			// REMOVE # IF AGENT WAS OUT TODAY
+			if (substr($data[0], 0, 1) == '#') {
+				$agents[substr($data[0], 1) . ' [am]'] = $data[11];
+				$links[substr($data[0], 1)] = $data[10];
+			} else {
+				$agents[$data[0] . ' [am]'] = $data[11];
+				$links[$data[0]] = $data[10];
+			}
 		}
 	}
 
@@ -227,32 +241,37 @@ if (!empty($out)) {
 			// add random person
 			foreach ($agents as $agent => $exp) {
 
-			    // check for a ringer (not on any other duties)
-			    if (array_intersect($agent, $phones) == NULL && array_intersect($agent, $triage) == NULL && array_intersect($agent, $chat) == NULL && array_intersect($agent, $sweeper) == NULL) {
-                            $ringer = $agent;
-			    break;
+				// check for a ringer (not on any other duties)
+				if (array_intersect($agent, $phones) == NULL && array_intersect($agent, $triage) == NULL && array_intersect($agent, $chat) == NULL && array_intersect($agent, $sweeper) == NULL) {
+					$ringer = $agent;
+					break;
 				}
 
-			    // don't consider if on two other jobs already
-			    $i=0;
-			    foreach($replace as $duty => $replacableNames) {
-			            if (array_intersect($agent, $$duty) == TRUE) {
-			            $i++;
-			            }
-			    }
+				// remove if on the duty already
+				if (array_intersect($agent, $$task) == TRUE) {
+					unset($agents[$agent]);
+				}
 
-			    if ($i >= 2) {
-			        unset($agents[$agent]);
-			    }
+				// don't consider if on two other jobs already
+				$i=0;
+				foreach($replace as $duty => $replacableNames) {
+				if (array_intersect($agent, $$duty) == TRUE) {
+					$i++;
+				}
+				}
 
-			    // if on chat or phones already, don't let both be assigned
-			    if ($task == "chat" || $task = "phones") {
-			        if (array_intersect($agent, $phones) == TRUE && $task = "chat") {
-			            unset($agents[$agent]);
-			        } elseif (array_intersect($agent, $chat) == TRUE && $task = "phones") {
-			            unset($agents[$key]);
-			        }
-			    }
+				if ($i >= 2) {
+					unset($agents[$agent]);
+				}
+
+				// if on chat or phones already, don't let both be assigned
+				if ($task == "chat" || $task = "phones") {
+				if (array_intersect($agent, $phones) == TRUE && $task = "chat") {
+				    unset($agents[$agent]);
+				} elseif (array_intersect($agent, $chat) == TRUE && $task = "phones") {
+				    unset($agents[$key]);
+				}
+				}
 			}
 
 
@@ -325,11 +344,8 @@ $replace = '$1' . $rand_agent . '$2';
 $new = preg_replace($pattern, $replace, $duties);
 file_put_contents($file, $new);
 
-$headers  = 'MIME-Version: 1.0' . "\r\n";
-$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-$headers .= 'From: triage@nabasny.com';
 $message = "<html><body style=\"font-family:Helvetica,Arial;font-size:18px;\"><h1>AGENT REPLACEMENT</h1><b>$name</b> has been replaced by <b><u>$rand_agent</u></b> for <i>$task</i>.<br /><br />Thank you for helping out the team!<br /><br />Find new shift information here: <a href=\"https://nabasny.com/triage/daily-schedule.php\">Daily Schedule</a></body></html>";
-mail("jake.nabasny@ingrammicro.com", "TRIAGE ALERT - $rand_agent", $message, $headers);
+gmail($rand_agent, $message);
 }
 
 function shuffle_assoc(&$array) {
@@ -344,6 +360,30 @@ foreach($keys as $key) {
 $array = $new;
 
 return true;
+}
+
+function gmail($name, $message) {
+$mail = new PHPMailer();
+$mail->IsSMTP();
+$mail->Mailer = "smtp";
+
+$mail->SMTPAuth   = TRUE;
+$mail->SMTPSecure = "tls";
+$mail->Port       = 587;
+$mail->Host       = "smtp.gmail.com";
+$mail->Username   = getenv('TRIAGE_MBOX');
+$mail->Password   = getenv('TRIAGE_PW');
+
+$mail->IsHTML(true);
+$mail->AddAddress("jake.nabasny@ingrammicro.com");
+$mail->SetFrom("f14fe1b8ebb1d3e98ea8a@gmail.com", "Triage Helper");
+$mail->AddReplyTo("jake.nabasny@ingrammicro.com");
+$mail->Subject = "TRIAGE ALERT - " . $name;
+
+$mail->MsgHTML($message);
+if(!$mail->Send()) {
+  error_log($mail);
+}
 }
 ?>
 ];
@@ -373,5 +413,7 @@ if (!empty($out)) {
 	echo '</div>';
 }
 ?>
+<br />
+<p style="font-size:small;">[am] = Agent will be available in the morning.</p>
 </body>
 </html>

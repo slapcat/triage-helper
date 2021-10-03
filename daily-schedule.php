@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if ($_SESSION['auth'] != TRUE) {
+if ($_SESSION['auth'] == "") {
 	header("Location: index.php");
 }
 ?>

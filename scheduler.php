@@ -8,7 +8,7 @@ $removeOldDays = shell_exec('sed -i "s=' . $yesterday  . '==g" ' . getenv('CSV_L
 $row = 1;
 $out = array();
 
-if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
+if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;

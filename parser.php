@@ -1,7 +1,8 @@
 <?php
 
 // check email
-$mailbox = "{localhost:993/imap/ssl/novalidate-cert}INBOX";
+//$mailbox = "{localhost:993/imap/ssl/novalidate-cert}INBOX";
+$mailbox = "{imap.gmail.com:993/imap/ssl}INBOX";
 $inbox = imap_open($mailbox, getenv('TRIAGE_MBOX'), getenv('TRIAGE_PW')) or die('Cannot connect to email: ' . imap_last_error());
 
 $emails = imap_search($inbox, 'ALL');
@@ -20,7 +21,7 @@ if($emails)
 	$row = 1;
 	$agents = array();
 
-	if (($handle = fopen(getenv('CSV_DL'), "r")) !== FALSE) {
+	if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 	    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
 	        $num = count($data);
 	        $row++;
