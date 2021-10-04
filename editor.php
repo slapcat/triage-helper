@@ -1,23 +1,33 @@
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="style_ed.css">
-</head>
-<body>
 <?php
 session_start();
 
 if ($_SESSION['auth'] == "") {
-	header("Location: index.php");
-	exit();
+        header("Location: index.php");
+        exit();
 }
 
 $file = $_GET['f'];
 $command = $_GET['c'];
 
+$page = $_SERVER['PHP_SELF'] . '?f=' . $file . '&c=redirect';
+$sec = "300"; // refresh every 5 mins
+?>
+<html>
+<head>
+<meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
+<link rel="stylesheet" type="text/css" href="style_ed.css">
+</head>
+<body>
+<?php
 if ($command == "exit") {
 	unlink($file . '.lock');
 	header('Location: index.php');
 	exit();
+} elseif ($command == "redirect") {
+	unlink($file . '.lock');
+	echo 'Your session has expired!';
+        header('refresh:10; url=index.php');
+        exit();
 }
 
 if (isset($_POST['text']))
@@ -63,6 +73,7 @@ if (!file_exists($file . '.lock')) {
 <p style="float:right;text-align:right"><input type="submit" value="Save" /></p>
 </div>
 <div style="clear: both;"></div>
+Page will refresh <i>without</i> saving in 5 minutes.
 </form>
 </body>
 </html>

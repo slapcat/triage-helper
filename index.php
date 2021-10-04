@@ -114,8 +114,18 @@ if ($weekday > 5) {
 // LOAD THE CURRENT LINE UP
 $file = './lineups/' . date('M-j-Y') . '.csv';
 if (!file_exists($file)) {
-	$duties = file_get_contents(getenv('DUTIES_LOCAL'));
-	file_put_contents($file, $duties);
+
+$contents = file_get_contents(getenv('DUTIES_LOCAL'));
+$pattern = "/^$weekday.*\$/m";
+
+if(preg_match_all($pattern, $contents, $matches)){
+        $duties = implode("\n", $matches[0]);
+} else {
+        // not a weekday
+}
+
+file_put_contents($file, $duties);
+
 }
 
 
