@@ -1,7 +1,6 @@
 <?php
 
 // check email
-//$mailbox = "{localhost:993/imap/ssl/novalidate-cert}INBOX";
 $mailbox = "{imap.gmail.com:993/imap/ssl}INBOX";
 $inbox = imap_open($mailbox, getenv('TRIAGE_MBOX'), getenv('TRIAGE_PW')) or die('Cannot connect to email: ' . imap_last_error());
 
@@ -19,6 +18,7 @@ if($emails)
 
 	// grab agent names from CSV and load into string
 	$row = 1;
+	$out = array();
 	$agents = array();
 
 	if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
@@ -27,6 +27,7 @@ if($emails)
 	        $row++;
 			if (substr($data[0], 0, 1) == '#') {
 			$data[0] = substr($data[0], 1);
+			$out[] = $data[0];
 			}
 		$agents[] = $data[0];
 	    }
@@ -68,33 +69,41 @@ foreach ($period as $dt) {
 }
     $timeoff[] =  $end->format("n/j");
 
+
+
+// add back # if agent currently out
+if (in_array($requester, $out)) {
+    $requester = '#' . $requester;
+}
+
 // sed those dates into CSV
 
 if(strpos($message, "added") !== false) {
 
-$removeLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/\"$//" ' . getenv('CSV_LOCAL'));
+$file = file_get_contents(getenv('CSV_LOCAL'));
 
-//$file = file_get_contents(getenv('CSV_LOCAL'));
+	$file = preg_replace('@(^'.$requester.'.*)".*$@m', '${1}', $file);
 
 	foreach ($timeoff as $date) {
-	$added = shell_exec('sed -i "\=^\(' . $requester . '\)=s=$=' . $date . ',=" ' . getenv('CSV_LOCAL'));
-	//$pattern = '#^(' . $requester . '.*),"$#i';
-	//echo preg_replace($pattern, '${1},' . $date . ',', $file);
-	imap_delete($inbox,$msg_number);
+	$file = preg_replace('@(^'.$requester.'.*).*$@m', '${1}'.$date.',', $file);
 	}
 
-$addLastQuote = shell_exec('sed -i "/^\(' . $requester . '\)/s/$/\"/" ' . getenv('CSV_LOCAL'));
+	$file = preg_replace('@(^'.$requester.'.*),$@m', '${1},"', $file);
+
+file_put_contents(getenv('CSV_LOCAL'), $file);
+imap_delete($inbox,$msg_number);
 
 } elseif (strpos($message, "deleted") !== false) {
 
-//$file = file_get_contents(getenv('CSV_LOCAL'));
+$file = file_get_contents(getenv('CSV_LOCAL'));
 
 	foreach ($timeoff as $date) {
-	$deleted = shell_exec('sed -i "\=^\(' . $requester . '\)=s=' . $date . ',==" ' . getenv('CSV_LOCAL'));
-	//$pattern = '#^(' . $requester . '.*)' . $date . ',(.*)$#i';
-	//echo preg_replace($pattern, "$1$2", $file);
-	imap_delete($inbox,$msg_number);
+	$pattern = '@(^'.$requester.'.*)'.$date.',(.*)@m';
+	$file = preg_replace($pattern, '${1}${2}', $file);
 	}
+
+file_put_contents(getenv('CSV_LOCAL'), $file);
+imap_delete($inbox,$msg_number);
 
 } else {
 // This is a change of date that needs to be updated manually.

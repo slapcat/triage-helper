@@ -1,8 +1,15 @@
+
 <?php
-// RESET THE OUT LIST
-$reset = shell_exec('sed -i "s/#//" ' . getenv('CSV_LOCAL'));
+
+$file = file_get_contents(getenv('CSV_LOCAL'));
+
+// RESET THE OUT LIST && REMOVE OLD VACATION DAYS
+$file = preg_replace('@^#(.*$)@m', '${1}', $file);
+
 $yesterday = date("n/j",strtotime("-1 days")) . ",";
-$removeOldDays = shell_exec('sed -i "s=' . $yesterday  . '==g" ' . getenv('CSV_LOCAL'));
+$file = preg_replace('@'.$yesterday.'@m', '', $file);
+
+file_put_contents(getenv('CSV_LOCAL'), $file);
 
 // FIND WHO IS OUT
 $row = 1;
@@ -30,6 +37,8 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 // MARK OUT
 foreach ($out as $name) {
 	$name = escapeshellcmd($name);
-	$set = shell_exec('sed -i "s/' . $name . '/#' . $name . '/" ' . getenv('CSV_LOCAL'));
+	$file = preg_replace('@(^'.$name.'.*$)@m', '#${1}', $file);
 }
+
+file_put_contents(getenv('CSV_LOCAL'), $file);
 ?>
