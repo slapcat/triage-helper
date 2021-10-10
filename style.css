@@ -66,6 +66,20 @@ body {
 
 .dropdown a:hover {background-color: #ddd; color: black;}
 
+
+.dropdown-content .critical {
+  background-color: tomato;
+  color: white;
+}
+
+.dropdown-content .critical:hover {
+  background-color: tomato;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .show {display: block;}
 
 title { text-align:left; margin-bottom: 5px;}

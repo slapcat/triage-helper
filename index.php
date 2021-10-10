@@ -53,7 +53,7 @@ $sec = "300"; // refresh every 5 mins
     <a href="daily-schedule.php">Daily Schedule</a>
     <a href="<?php echo getenv('CSV_URL') ?>">Edit Schedule</a>
     <a href="<?php echo getenv('DUTIES_URL') ?>">Edit Duties</a>
-    <a onClick="Confirm()">Reset Duties</a>
+    <a class="critical" onClick="Confirm()">Reset Duties</a>
   </div>
 </div></div>
 
@@ -241,12 +241,19 @@ if (!empty($out)) {
 
 	foreach ($replace as $task => $names) {
 
+	// logging
+	$log = "triage.log";
+	error_log("Out: ".$out, 3, $log);
+	error_log("Agents: ".$agents, 3, $log);
+
 		foreach ($names as $name) {
 			// remove out person
 			$key = array_search($name, $$task);
 			unset($$task[$key]);
 	    		array_values($$task);
 
+
+			error_log("Name: ".$name, 3, $log);
 
 			// add random person
 			foreach ($agents as $agent => $exp) {
@@ -284,24 +291,26 @@ if (!empty($out)) {
 				}
 			}
 
+			error_log("Trimmed down agents: ".$agents, 3, $log);
 
- 			// grab an agent from the remaining
-			    if ($ringer != "") {
+			// grab an agent from the remaining
+			if ($ringer != "") {
 				$$task[] = $ringer;
 				unset($agents[$ringer]);
 				replaceAgent($name, $ringer, $task, $file);
-				} elseif ($agents != NULL) {
-			    $replacement = array_key_first($agents);
-        	                    $$task[] = $replacement;
-					unset($agents[$replacement]);
-	                            replaceAgent($name, $replacement, $task, $file);
-			    } else {
-			    $replacement = array_key_first($allAgents);
-        	                    $$task[] = $replacement;
-					unset($agents[$replacement]);
-	                            replaceAgent($name, $replacement, $task, $file);
-			    }
-
+				error_log("Ringer: ".$ringer, 3, $log);
+			} elseif ($agents != NULL) {
+				$replacement = array_key_first($agents);
+				$$task[] = $replacement;
+				unset($agents[$replacement]);
+				replaceAgent($name, $replacement, $task, $file);
+			} else {
+				$replacement = array_key_first($allAgents);
+				$$task[] = $replacement;
+				unset($agents[$replacement]);
+				replaceAgent($name, $replacement, $task, $file);
+			}
+			error_log("Replacement: ".$replacement, 3, $log);
 		}
 	}
 
