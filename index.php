@@ -179,10 +179,10 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
         $row++;
 
 	// DEFINE IN & OUT TIMES
-	$buffertime = ($data[$timein] - 2);
-	$timeout = ($data[$timein] + 7.5); // remove name an hour before end of shift
-	$tomorrow = $weekday + 1;
-	$timein_tmrw = $timein;
+	$buffertime = (floatval($data[$timein]) - 2);
+	$timeout = (floatval($data[$timein]) + 7.5); // remove name an hour before end of shift
+	$tomorrow = (int)$weekday + 1;
+	$timein_tmrw = floatval($timein);
 	if ($tomorrow == 8) {
 		$tomorrow = 1;
 		$timein_tmrw = 8;
@@ -259,20 +259,20 @@ if (!empty($out)) {
 			foreach ($agents as $agent => $exp) {
 
 				// check for a ringer (not on any other duties)
-				if (array_intersect($agent, $phones) == NULL && array_intersect($agent, $triage) == NULL && array_intersect($agent, $chat) == NULL && array_intersect($agent, $sweeper) == NULL) {
+				if (in_array($agent, $phones) == FALSE && in_array($agent, $triage) == FALSE && in_array($agent, $chat) == FALSE && in_array($agent, $sweeper) == FALSE) {
 					$ringer = $agent;
 					break;
 				}
 
 				// remove if on the duty already
-				if (array_intersect($agent, $$task) == TRUE) {
+				if (in_array($agent, $$task) == TRUE) {
 					unset($agents[$agent]);
 				}
 
 				// don't consider if on two other jobs already
 				$i=0;
 				foreach($replace as $duty => $replacableNames) {
-				if (array_intersect($agent, $$duty) == TRUE) {
+				if (in_array($agent, $$duty) == TRUE) {
 					$i++;
 				}
 				}
@@ -283,9 +283,9 @@ if (!empty($out)) {
 
 				// if on chat or phones already, don't let both be assigned
 				if ($task == "chat" || $task = "phones") {
-				if (array_intersect($agent, $phones) == TRUE && $task = "chat") {
+				if (in_array($agent, $phones) == TRUE && $task = "chat") {
 				    unset($agents[$agent]);
-				} elseif (array_intersect($agent, $chat) == TRUE && $task = "phones") {
+				} elseif (in_array($agent, $chat) == TRUE && $task = "phones") {
 				    unset($agents[$key]);
 				}
 				}

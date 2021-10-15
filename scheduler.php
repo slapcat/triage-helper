@@ -1,4 +1,3 @@
-
 <?php
 
 $file = file_get_contents(getenv('CSV_LOCAL'));
@@ -9,7 +8,7 @@ $file = preg_replace('@^#(.*$)@m', '${1}', $file);
 $yesterday = date("n/j",strtotime("-1 days")) . ",";
 $file = preg_replace('@'.$yesterday.'@m', '', $file);
 
-file_put_contents(getenv('CSV_LOCAL'), $file);
+$save = file_put_contents(getenv('CSV_LOCAL'), $file);
 
 // FIND WHO IS OUT
 $row = 1;
@@ -40,5 +39,5 @@ foreach ($out as $name) {
 	$file = preg_replace('@(^'.$name.'.*$)@m', '#${1}', $file);
 }
 
-file_put_contents(getenv('CSV_LOCAL'), $file);
+$save = file_put_contents(getenv('CSV_LOCAL'), $file);
 ?>

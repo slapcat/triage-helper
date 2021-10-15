@@ -3,7 +3,7 @@ session_start();
 
 if ($_SESSION['auth'] == "") {
         header("Location: index.php");
-        exit();
+        die();
 }
 
 $file = $_GET['f'];
@@ -11,23 +11,16 @@ $command = $_GET['c'];
 
 $page = $_SERVER['PHP_SELF'] . '?f=' . $file . '&c=redirect';
 $sec = "300"; // refresh every 5 mins
-?>
-<html>
-<head>
-<meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
-<link rel="stylesheet" type="text/css" href="style_ed.css">
-</head>
-<body>
-<?php
+
 if ($command == "exit") {
 	unlink($file . '.lock');
 	header('Location: index.php');
-	exit();
+	die();
 } elseif ($command == "redirect") {
 	unlink($file . '.lock');
 	echo 'Your session has expired!';
         header('refresh:10; url=index.php');
-        exit();
+        die();
 }
 
 if (isset($_POST['text']))
@@ -36,12 +29,21 @@ if (isset($_POST['text']))
     file_put_contents($file, $_POST['text']);
     unlink($file . '.lock');
     header('Location: index.php');
-    exit();
+    die();
     } else {
     echo '<br />Someone has stolen your session. Please try again to make your edits.';
     exit();
     }
 }
+
+?>
+<html>
+<head>
+<meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
+<link rel="stylesheet" type="text/css" href="style_ed.css">
+</head>
+<body>
+<?php
 
 if ($file == 'schedule.csv' || $file == 'duties.csv') {
 	$file = $_GET['f'];
