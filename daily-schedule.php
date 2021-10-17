@@ -123,6 +123,7 @@ if (($handle = fopen('lineups/' . date('M-j-Y') . '.csv', "r")) !== FALSE) {
 <tr>
 <th></th>
 <th>8am - 4:30pm</th>
+<th>10am - 6:30pm</th>
 <th>11:30am - 8pm</th>
 </tr>
 <tr>
