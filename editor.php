@@ -6,8 +6,9 @@ if ($_SESSION['auth'] == "") {
         die();
 }
 
-$file = $_GET['f'];
-$command = $_GET['c'];
+
+if (isset($_GET['f'])) { $file = $_GET['f']; }
+if (isset($_GET['c'])) { $command = $_GET['c']; } else { $command = ""; }
 
 $page = $_SERVER['PHP_SELF'] . '?f=' . $file . '&c=redirect';
 $sec = "300"; // refresh every 5 mins
@@ -59,6 +60,10 @@ if ($command == "force") {
 if (!file_exists($file . '.lock')) {
 	$text = file_get_contents($file);
 	file_put_contents($file . '.lock', $_SESSION['auth']);
+} elseif (time()-filemtime($file . '.lock') > 300) {
+	unlink($file . '.lock');
+        $text = file_get_contents($file);
+        file_put_contents($file . '.lock', $_SESSION['auth']);
 } else {
 	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.";
 	exit();

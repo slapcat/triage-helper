@@ -53,6 +53,7 @@ $sec = "300"; // refresh every 5 mins
     <a href="daily-schedule.php">Daily Schedule</a>
     <a href="<?php echo getenv('CSV_URL') ?>">Edit Schedule</a>
     <a href="<?php echo getenv('DUTIES_URL') ?>">Edit Duties</a>
+    <a href="log.php" target="_blank">Replacement Log</a>
     <a class="critical" onClick="Confirm()">Reset Duties</a>
   </div>
 </div></div>
@@ -235,25 +236,24 @@ if (!empty($out)) {
 	$replace["chat"] = array_intersect($chat, $out);
 	$replace["sweeper"] = array_intersect($sweeper, $out);
 
+	// LOGGING
+	$log = array();
+	$logfile = 'triage.log';
+	$log["Out"] = $replace;
+	$log["AvailableAgents"] = array_keys($agents);
+
 	$allAgents = $agents;
 	shuffle_assoc($agents);
 	shuffle_assoc($allAgents);
 
 	foreach ($replace as $task => $names) {
 
-	// logging
-	$log = "triage.log";
-	error_log("Out: ".$out, 3, $log);
-	error_log("Agents: ".$agents, 3, $log);
-
 		foreach ($names as $name) {
+
 			// remove out person
 			$key = array_search($name, $$task);
 			unset($$task[$key]);
 	    		array_values($$task);
-
-
-			error_log("Name: ".$name, 3, $log);
 
 			// add random person
 			foreach ($agents as $agent => $exp) {
@@ -261,7 +261,6 @@ if (!empty($out)) {
 				// check for a ringer (not on any other duties)
 				if (in_array($agent, $phones) == FALSE && in_array($agent, $triage) == FALSE && in_array($agent, $chat) == FALSE && in_array($agent, $sweeper) == FALSE) {
 					$ringer = $agent;
-					break;
 				}
 
 				// remove if on the duty already
@@ -282,35 +281,40 @@ if (!empty($out)) {
 				}
 
 				// if on chat or phones already, don't let both be assigned
-				if ($task == "chat" || $task = "phones") {
-				if (in_array($agent, $phones) == TRUE && $task = "chat") {
+				if ($task == "chat" || $task == "phones") {
+				if (in_array($agent, $phones) == TRUE && $task == "chat") {
 				    unset($agents[$agent]);
-				} elseif (in_array($agent, $chat) == TRUE && $task = "phones") {
+				} elseif (in_array($agent, $chat) == TRUE && $task == "phones") {
 				    unset($agents[$key]);
 				}
 				}
 			}
 
-			error_log("Trimmed down agents: ".$agents, 3, $log);
+			$log[$task][$name]["Trimmed"] = array_keys($agents);
 
 			// grab an agent from the remaining
 			if ($ringer != "") {
 				$$task[] = $ringer;
 				unset($agents[$ringer]);
 				replaceAgent($name, $ringer, $task, $file);
-				error_log("Ringer: ".$ringer, 3, $log);
+				$log[$task][$name]["Ringer"] = $ringer;
 			} elseif ($agents != NULL) {
 				$replacement = array_key_first($agents);
 				$$task[] = $replacement;
 				unset($agents[$replacement]);
 				replaceAgent($name, $replacement, $task, $file);
+				$log[$task][$name]["ReplacementAgent"] = $replacement;
+
 			} else {
 				$replacement = array_key_first($allAgents);
 				$$task[] = $replacement;
 				unset($agents[$replacement]);
 				replaceAgent($name, $replacement, $task, $file);
+				$log[$task][$name]["ReplacementAgent"] = $replacement;
 			}
-			error_log("Replacement: ".$replacement, 3, $log);
+			$oldLog = file_get_contents($logfile);
+			file_put_contents($logfile, "\n[-------- " . $name . " ----- " . $task . " ------- " . date(DATE_RFC2822) . " ------]\n" . var_export($log, TRUE) . $oldLog);
+			$log = array();
 		}
 	}
 
