@@ -25,9 +25,23 @@ $sweeper = "";
 
 // DEFINE TIMES
 $weekday = date( 'N' );  // Mon (1) - Sun (7)
+$date = date('F j, Y');
+$file = 'lineups/' . date('M-j-Y') . '.csv';
+
+// CHECK IF DATE SELECTED
+if (isset($_POST['day'])) {
+	$weekday = date('w', strtotime($_POST['day'])); // SUN = 0
+	if ($weekday == 0) { $weekday = 7; }
+	
+	$file = 'duties.csv';
+
+	$date = DateTime::createFromFormat('Y-m-d', $_POST['day']);
+	$date = $date->format('F j, Y');
+}
+
 
 // LOAD THE CURRENT LINE UP
-if (($handle = fopen('lineups/' . date('M-j-Y') . '.csv', "r")) !== FALSE) {
+if (($handle = fopen($file, "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -66,7 +80,11 @@ if (($handle = fopen('lineups/' . date('M-j-Y') . '.csv', "r")) !== FALSE) {
    fclose($handle);
 }
 ?>
-<h1>Duties for <?php echo date('F j, Y'); ?></h1>
+<h1>Duties for <?php echo $date; ?></h1>
+<form action="daily-schedule.php" method="post">
+  <input type="date" id="day" name="day">
+  <input type="submit" value="change date">
+</form>
 <center>
 
 <table>
