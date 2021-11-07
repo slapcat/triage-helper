@@ -1,6 +1,7 @@
 <?php
+$config = parse_ini_file("settings.ini", TRUE);
 
-$file = file_get_contents(getenv('CSV_LOCAL'));
+$file = file_get_contents($config["db"]["schedule"]);
 
 // RESET THE OUT LIST && REMOVE OLD VACATION DAYS
 $file = preg_replace('@^#(.*$)@m', '${1}', $file);
@@ -8,13 +9,13 @@ $file = preg_replace('@^#(.*$)@m', '${1}', $file);
 $yesterday = date("n/j",strtotime("-1 days")) . ",";
 $file = preg_replace('@'.$yesterday.'@m', '', $file);
 
-$save = file_put_contents(getenv('CSV_LOCAL'), $file);
+$save = file_put_contents($config["db"]["schedule"], $file);
 
 // FIND WHO IS OUT
 $row = 1;
 $out = array();
 
-if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
+if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -39,5 +40,5 @@ foreach ($out as $name) {
 	$file = preg_replace('@(^'.$name.'.*$)@m', '#${1}', $file);
 }
 
-$save = file_put_contents(getenv('CSV_LOCAL'), $file);
+$save = file_put_contents($config["db"]["schedule"], $file);
 ?>

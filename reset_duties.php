@@ -1,4 +1,6 @@
 <?php
+$config = parse_ini_file("settings.ini", TRUE);
+
 session_start();
 
 if ($_SESSION['auth'] != TRUE) {

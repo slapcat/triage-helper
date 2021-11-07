@@ -1,3 +1,10 @@
+* {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+}
+
 body {
 	font-family:Helvetica,Arial;
 	font-size:30px;
@@ -15,12 +22,10 @@ body {
 .out-banner {
 	color:white;
 	background-color:red;
-	top:0;
-	left:0;
 	font-size: 16px;
 	font-weight: bold;
 	width:100%;
-	position:absolute;
+	position:relative;
 	padding-top: 12px;
 	padding-bottom: 5px;
 	text-align: center;
@@ -121,8 +126,8 @@ title { text-align:left; margin-bottom: 5px;}
   visibility: visible;
 }
 
-.names {
-	margin: 0 100px;
+.content {
+	margin: 0 10px;
 }
 
 a {

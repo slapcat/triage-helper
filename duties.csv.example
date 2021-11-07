@@ -1,0 +1,10 @@
+day,start time,task,roster
+1,6,1,"Tom,Dick,"
+1,8,1,"Harry,Tom,"
+1,8,2,"Tom,"
+1,8,3,"Harry,"
+1,8,4,"Dick,"
+2,8,1,"Tom,Dick,"
+2,10,1,"Harry,"
+2,8,2,"Tom,"
+2,11.5,2,"Dick,"

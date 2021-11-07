@@ -1,0 +1,42 @@
+; Triage Helper v2.0
+; Developed by Jake Nabasny
+; https://jake.nabasny.com
+
+[app]
+url = "https://example.com/triage/"
+auto-refresh = 300
+pass = "MyPa$$w0rd"
+
+[db]
+; Can't be changed without breaking editor, currently
+schedule = "schedule.csv"
+duties = "duties.csv"
+
+[tickets_URL]
+; Pre- and post-pend URL to agent ID:
+pre = "https://ticketing_system.com/a/tickets/?agent="
+post = "&sort=dec"
+
+[jobs]
+1 = "phones"
+2 = "triage"
+3 = "chat"
+4 = "sweeper"
+
+[duration]
+1 = 4
+2 = 6
+3 = 8.5
+4 = 8.5
+
+[email]
+; For SharePoint integration. Send calendar notifications to this mailbox:
+imap = "{imap.gmail.com:993/imap/ssl}INBOX"
+imap_user = "user@gmail.com"
+imap_pass = "password"
+; For notifications about substitutions when an agent is off:
+smtp_host = "smtp.gmail.com"
+smtp_port = 587
+smtp_user = "user@gmail.com"
+smtp_pass = "password"
+recipient = "support-list@example.com"

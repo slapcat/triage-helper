@@ -1,8 +1,8 @@
 <?php
+$config = parse_ini_file("settings.ini", TRUE);
 
 // check email
-$mailbox = "{imap.gmail.com:993/imap/ssl}INBOX";
-$inbox = imap_open($mailbox, getenv('TRIAGE_MBOX'), getenv('TRIAGE_PW')) or die('Cannot connect to email: ' . imap_last_error());
+$inbox = imap_open($config["email"]["imap"], $config["email"]["imap_user"], $config["email"]["imap_pass"]) or die('Cannot connect to email: ' . imap_last_error());
 
 $emails = imap_search($inbox, 'ALL');
 
@@ -14,14 +14,13 @@ if($emails)
 	$header = imap_headerinfo($inbox, $msg_number);
 	$subject = $header->subject;
 	$subject = ucwords($subject); // uppercase it
-	//$subject = explode(' ',$subject);
 
 	// grab agent names from CSV and load into string
 	$row = 1;
 	$out = array();
 	$agents = array();
 
-	if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
+	if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 	    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
 	        $num = count($data);
 	        $row++;
@@ -80,7 +79,7 @@ if (in_array($requester, $out)) {
 
 if(strpos($message, "added") !== false) {
 
-$file = file_get_contents(getenv('CSV_LOCAL'));
+$file = file_get_contents($config["db"]["schedule"]);
 
 	$file = preg_replace('@(^'.$requester.'.*)".*$@m', '${1}', $file);
 
@@ -90,19 +89,19 @@ $file = file_get_contents(getenv('CSV_LOCAL'));
 
 	$file = preg_replace('@(^'.$requester.'.*),$@m', '${1},"', $file);
 
-file_put_contents(getenv('CSV_LOCAL'), $file);
+file_put_contents($config["db"]["schedule"], $file);
 imap_delete($inbox,$msg_number);
 
 } elseif (strpos($message, "deleted") !== false) {
 
-$file = file_get_contents(getenv('CSV_LOCAL'));
+$file = file_get_contents($config["db"]["schedule"]);
 
 	foreach ($timeoff as $date) {
 	$pattern = '@(^'.$requester.'.*)'.$date.',(.*)@m';
 	$file = preg_replace($pattern, '${1}${2}', $file);
 	}
 
-file_put_contents(getenv('CSV_LOCAL'), $file);
+file_put_contents($config["db"]["schedule"], $file);
 imap_delete($inbox,$msg_number);
 
 } else {

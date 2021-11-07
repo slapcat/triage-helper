@@ -1,4 +1,6 @@
 <?php
+$config = parse_ini_file("settings.ini", TRUE);
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -20,7 +22,7 @@ if (empty($pass)) {
 	printf('<body style="background-color:lightgrey"><center><br /><br /><form name="input" action="index.php" method="POST"><label for="pass">Enter Password</label><br /><input name="pass" id="pass" type="password" class="formbox" placeholder="password" /><br /><br /><input name="submit" id="submit" type="submit" value="Login" /></form></center></body>');
 	die();
 
-} elseif ($pass == getenv('TRIAGE_TOOL_PW')) {
+} elseif ($pass == $config["app"]["pass"]) {
 
 	$_SESSION['auth'] = session_id();
 
@@ -32,76 +34,26 @@ if (empty($pass)) {
 }
 
 skip:
-
-$page = $_SERVER['PHP_SELF'];
-$sec = "300"; // refresh every 5 mins
 ?>
 <html>
 <head>
-<meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
+<meta http-equiv="refresh" content="<?php echo $config['app']['auto-refresh'] ?>;URL='<?php echo $_SERVER['PHP_SELF']; ?>'">
 <link rel="stylesheet" type="text/css" href="style.css">
 <link href="https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator_site.css" rel="stylesheet">
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
 <title>Triage Helper</title>
 </head>
-
-<body>
-<div class="title" style="margin-top:38px;"><font size="12px">Please assign tickets to...</font>
-<div class="dropdown">
-  <button onclick="myFunction()" class="dropbtn">✎</button>
-  <div id="myDropdown" class="dropdown-content">
-    <a href="daily-schedule.php">Daily Schedule</a>
-    <a href="<?php echo getenv('CSV_URL') ?>">Edit Schedule</a>
-    <a href="<?php echo getenv('DUTIES_URL') ?>">Edit Duties</a>
-    <a href="log.php" target="_blank">Replacement Log</a>
-    <a class="critical" onClick="Confirm()">Reset Duties</a>
-  </div>
-</div></div>
-
-<script>
-function myFunction() {
-  document.getElementById("myDropdown").classList.toggle("show");
-}
-
-window.onclick = function(event) {
-  if (!event.target.matches('.dropbtn')) {
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains('show')) {
-        openDropdown.classList.remove('show');
-      }
-    }
-  }
-}
-
-function Confirm() {
-  var r = confirm("WARNING! This will reset all assigned duties to the defaults. Press OK if you are sure you want to proceed.");
-  if (r == true) {
-    window.location.replace("reset_duties.php");
-  }
-}
-</script>
-
-<div id="full-table"></div>
-
-<script type="text/javascript">
-var tabledata = [
 <?php
 
 // DEFINE VARIABLES
 $row = 1;
 $agents = array();
-$links = array();
 $out = array();
-$phones = "";
-$triage = "";
-$chat = "";
-$sweeper = "";
+$active = "";
+$columns = "";
 
 // DEFINE TIMES
-$weekday = date( 'N' );  // Mon (1) - Sun (7)
+$weekday = date( 'N' );  // Mon (1) - Sun (7) test
 $hour = date( 'G' ); // 24hr digit
 if (date ( 'i' ) > 29) {
 	$hour = $hour + .5;
@@ -112,11 +64,12 @@ if ($weekday > 5) {
 	$timein = 8; // Use weekday time
 }
 
+
 // LOAD THE CURRENT LINE UP
 $file = './lineups/' . date('M-j-Y') . '.csv';
 if (!file_exists($file)) {
 
-$contents = file_get_contents(getenv('DUTIES_LOCAL'));
+$contents = file_get_contents($config['db']['duties']);
 $pattern = "/^$weekday.*\$/m";
 
 if(preg_match_all($pattern, $contents, $matches)){
@@ -129,52 +82,38 @@ file_put_contents($file, $duties);
 
 }
 
-
 if (($handle = fopen($file, "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-        $num = count($data);
-        $row++;
+	$num = count($data);
+	$row++;
 
-	//phones
-	if ($data[0] == $weekday && $hour >= $data[1] && $data[2] == 1) {
-		$endshift = $data[1] + 4;
+
+	foreach ($config["jobs"] as $num => $job) {
+	if (!isset($$job)) { $$job = ""; }
+
+	if ($data[0] == $weekday && $hour >= $data[1] && $data[2] == $num) {
+
+		$endshift = $data[1] + $config['duration'][$num];
 		if ($hour < $endshift) {
-			$phones = $phones . $data[3];
-		}
-	//triage
-	} elseif ($data[0] == $weekday && $hour >= $data[1] && $data[2] == 2) {
-		$endshift = $data[1] + 8.5;
-		if ($hour < $endshift) {
-			$triage = $triage . $data[3];
-		}
-	//chats
-	} elseif ($data[0] == $weekday && $hour >= $data[1] && $data[2] == 3) {
-		$endshift = $data[1] + 6;
-		if ($hour < $endshift) {
-			$chat = $chat . $data[3];
-		}
-	//sweeper
-	} elseif ($data[0] == $weekday && $hour >= $data[1] && $data[2] == 4) {
-		$endshift = $data[1] + 8.5;
-		if ($hour < $endshift) {
-			$sweeper = $sweeper . $data[3];
+			$$job .= $data[3];
 		}
 	}
-   }
-   fclose($handle);
+	}
+    }
+
+	   fclose($handle);
 }
 
-// CONVERT DUTIES TO ARRAYS
-$phones = explode(",", $phones);
-$triage = explode(",", $triage);
-$chat = explode(",", $chat);
-$sweeper = explode(",", $sweeper);
-
+// CONVERT DUTIES TO ARRAY AND BUILD COLUMNS FOR TABLE
+foreach ($config["jobs"] as $num => $job) {
+	$$job = explode(",", $$job);
+	$columns .= '{title:"'.ucwords($job).'", field:"'.$job.'", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},';
+}
 
 // CHECK THE SCHEDULE
 $row=1;
 
-if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
+if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
         $row++;
@@ -193,8 +132,16 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 	// CHECK IF WORKING NOW
 	if ($data[$weekday] == 1 && $hour >= $buffertime && $hour < $timeout) {
 		if (substr($data[0], 0, 1) !== '#') {
-			$agents[$data[0]] = $data[11];
-			$links[$data[0]] = $data[10];
+			$agents[$data[0]] = array($data[11], $data[10]);
+
+			foreach ($config["jobs"] as $job) {
+				if (in_array($data[0], $$job)) {
+					$agents[$data[0]][] = 1;
+				} else {
+					$agents[$data[0]][] = 0;
+				}
+			}
+
 		}
 	}
 
@@ -207,11 +154,9 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 		} else {
 			// REMOVE # IF AGENT WAS OUT TODAY
 			if (substr($data[0], 0, 1) == '#') {
-				$agents[substr($data[0], 1) . ' [am]'] = $data[11];
-				$links[substr($data[0], 1)] = $data[10];
+				$agents[substr($data[0], 1) . ' [am]'] = array($data[11], $data[10]);
 			} else {
-				$agents[$data[0] . ' [am]'] = $data[11];
-				$links[$data[0]] = $data[10];
+				$agents[$data[0] . ' [am]'] = array($data[11], $data[10]);
 			}
 		}
 	}
@@ -219,8 +164,7 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 
 	// CHECK IF OUT FOR THE DAY
 	if (substr($data[0], 0, 1) == '#') {
-		$out[] = substr($data[0], 1);
-		$links[substr($data[0], 1)] = $data[10];
+		$out[substr($data[0], 1)] = $data[10];
 	}
 
 
@@ -230,11 +174,12 @@ if (($handle = fopen(getenv('CSV_LOCAL'), "r")) !== FALSE) {
 
 // REPLACE AGENTS WHO ARE OUT FOR DUTIES
 if (!empty($out)) {
+
 	$replace = array();
-	$replace["phones"] = array_intersect($phones, $out);
-	$replace["triage"] = array_intersect($triage, $out);
-	$replace["chat"] = array_intersect($chat, $out);
-	$replace["sweeper"] = array_intersect($sweeper, $out);
+
+	foreach ($config["jobs"] as $num => $job) {
+	$replace[$job] = array_intersect($$job, array_keys($out));
+	}
 
 	// LOGGING
 	$log = array();
@@ -253,7 +198,7 @@ if (!empty($out)) {
 			// remove out person
 			$key = array_search($name, $$task);
 			unset($$task[$key]);
-	    		array_values($$task);
+		    	array_values($$task);
 
 			// add random person
 			foreach ($agents as $agent => $exp) {
@@ -322,52 +267,20 @@ $agents = $allAgents;
 
 }
 
-// PRINT ACTIVE AGENTS
-foreach ($agents as $name => $exp) {
-
-echo '{agent:"' . $name . '", expertise:"' . $exp . '", phones:' .
-                checkDuties($phones, $name) . ', triage:' . checkDuties($triage, $name) . ', chat:' .
-                checkDuties($chat, $name) . ', sweeper:' . checkDuties($sweeper, $name) .
-                ', tickets:"https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-                $links[$name] . '&q[]=status%3A%5B0%5D&ref=256627"},';
-
-
-}
-
-
 // CUSTOM FUNCTIONS
-function checkDuties($duty, $name)
-{
-	if (in_array($name, $duty)) {
-	    return 1;
-	} else { return 0; }
-}
-
 function replaceAgent($name, $rand_agent, $task, $file)
 {
 global $weekday;
+global $config;
 $duties = file_get_contents($file);
-switch ($task) {
-    case "phones":
-	$task_num = 1;
-        break;
-    case "triage":
-	$task_num = 2;
-        break;
-    case "chat":
-	$task_num = 3;
-        break;
-    case "sweeper":
-	$task_num = 4;
-        break;
-}
+$task_num = array_search($task, $config["jobs"]);
 
 $pattern = '/(' . $weekday . ',.*,' . $task_num . ',.*)' . $name . '(.*)/i';
 $replace = '$1' . $rand_agent . '$2';
 $new = preg_replace($pattern, $replace, $duties);
 file_put_contents($file, $new);
 
-$message = "<html><body style=\"font-family:Helvetica,Arial;font-size:18px;\"><h1>AGENT REPLACEMENT</h1><b>$name</b> has been replaced by <b><u>$rand_agent</u></b> for <i>$task</i>.<br /><br />Thank you for helping out the team!<br /><br />Find new shift information here: <a href=\"https://nabasny.com/triage/daily-schedule.php\">Daily Schedule</a></body></html>";
+$message = "<html><body style=\"font-family:Helvetica,Arial;font-size:18px;\"><h1>AGENT REPLACEMENT</h1><b>$name</b> has been replaced by <b><u>$rand_agent</u></b> for <i>$task</i>.<br /><br />Thank you for helping out the team!<br /><br />Find new shift information here: <a href=\"" . $config["app"]["url"] . "daily-schedule.php\">Daily Schedule</a></body></html>";
 gmail($rand_agent, $message);
 }
 
@@ -386,21 +299,22 @@ return true;
 }
 
 function gmail($name, $message) {
+global $config;
 $mail = new PHPMailer();
 $mail->IsSMTP();
 $mail->Mailer = "smtp";
 
 $mail->SMTPAuth   = TRUE;
 $mail->SMTPSecure = "tls";
-$mail->Port       = 587;
-$mail->Host       = "smtp.gmail.com";
-$mail->Username   = getenv('TRIAGE_MBOX');
-$mail->Password   = getenv('TRIAGE_PW');
+$mail->Port       = $config["email"]["smtp_port"];
+$mail->Host       = $config["email"]["smtp_host"];
+$mail->Username   = $config["email"]["smtp_user"];
+$mail->Password   = $config["email"]["smtp_pass"];
 
 $mail->IsHTML(true);
-$mail->AddAddress("jake.nabasny@ingrammicro.com");
-$mail->SetFrom("f14fe1b8ebb1d3e98ea8a@gmail.com", "Triage Helper");
-$mail->AddReplyTo("jake.nabasny@ingrammicro.com");
+$mail->AddAddress($config["email"]["recipient"]);
+$mail->SetFrom($config["email"]["smtp_user"], "Triage Helper");
+$mail->AddReplyTo($config["email"]["recipient"]);
 $mail->Subject = "TRIAGE ALERT - " . $name;
 
 $mail->MsgHTML($message);
@@ -408,7 +322,81 @@ if(!$mail->Send()) {
   error_log($mail);
 }
 }
+
+if (!empty($out)) {
+	echo "<div class=\"out-banner\">Currently out:  ";
+
+	foreach ($out as $name => $link) {
+	echo '<a href="' . $config["tickets_URL"]["pre"] .
+		$link .  $config["tickets_URL"]["post"] . '" target="_blank">' . $name . '</a>  ';
+	}
+
+	echo '</div>';
+}
+
+// LOAD ACTIVE AGENTS
+foreach ($agents as $name => $info) {
+    $active .= '{agent:"' . $name . '", expertise:"' . $info[0] . '", ';
+
+    $task_count = 1;
+    for ($i = 2 ; $i < count($info); $i++) {
+        $active .= $config["jobs"][$task_count] . ":";
+        $active .= $info[$i];
+        $active .= ", ";
+
+        $task_count++;
+    }
+
+  $active .= 'tickets:"' . $config["tickets_URL"]["pre"] . $info[1] .
+			$config["tickets_URL"]["post"] . '"},';
+}
 ?>
+
+<body>
+<div class="content">
+<div class="title" style="margin-top:5px;"><font size="12px">Please assign tickets to...</font>
+<div class="dropdown">
+  <button onclick="myFunction()" class="dropbtn">✎</button>
+  <div id="myDropdown" class="dropdown-content">
+    <a href="daily-schedule.php">Daily Schedule</a>
+    <a href="<?php echo 'editor.php?f=' . $config["db"]["schedule"] ?>">Edit Schedule</a>
+    <a href="<?php echo 'editor.php?f=' . $config["db"]["duties"] ?>">Edit Duties</a>
+    <a href="log.php" target="_blank">Replacement Log</a>
+    <a class="critical" onClick="Confirm()">Reset Duties</a>
+  </div>
+</div></div>
+
+<script>
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+function Confirm() {
+  var r = confirm("WARNING! This will reset all assigned duties to the defaults. Press OK if you are sure you want to proceed.");
+  if (r == true) {
+    window.location.replace("reset_duties.php");
+  }
+}
+</script>
+
+<div id="full-table"></div>
+
+<script type="text/javascript">
+var tabledata = [
+<?php echo $active; ?>
 ];
 var table = new Tabulator("#full-table", {
     data:tabledata,
@@ -417,26 +405,12 @@ var table = new Tabulator("#full-table", {
 columns:[
         {title:"Agent", field:"agent", width:100, formatter:"link", formatterParams:{urlField:"tickets",target:"_blank",}},
         {title:"Expertise", field:"expertise", headerFilter:"input"},
-        {title:"Phones", field:"phones", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
-        {title:"Triage", field:"triage", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
-        {title:"Chat", field:"chat", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
-        {title:"Sweeper", field:"sweeper", width:100, hozAlign:"center", formatter:"tickCross", sorter:"boolean"},
+<?php echo $columns; ?>
     ],
 });
 </script>
-<?php
-if (!empty($out)) {
-	echo "<div class=\"out-banner\">Currently out:  ";
-
-	foreach ($out as $name) {
-	echo '<a href="https://ingrammicro-assist.freshdesk.com/a/tickets/filters/search?orderBy=updated_at&orderType=desc&q[]=' .
-		$links[$name] . '&q[]=status%3A%5B0%5D&ref=256627" target="_blank">' . $name . '</a>  ';
-	}
-
-	echo '</div>';
-}
-?>
 <br />
 <p style="font-size:small;">[am] = Agent will be available in the morning.</p>
+</div>
 </body>
 </html>
