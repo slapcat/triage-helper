@@ -11,11 +11,11 @@ ini_set('session.gc_maxlifetime', 43200);
 session_set_cookie_params(43200);
 session_start();
 
-if ($_SESSION['auth'] != "") {
+if (isset($_SESSION['auth']) && $_SESSION['auth'] != "") {
 	goto skip;
 }
 
-$pass = $_POST["pass"];
+if (isset($_POST["pass"])) { $pass = $_POST["pass"]; }
 
 if (empty($pass)) {
 
