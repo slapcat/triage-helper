@@ -67,7 +67,7 @@ if (!file_exists($file . '.lock')) {
         $text = file_get_contents($file);
         file_put_contents($file . '.lock', $_SESSION['auth']);
 } else {
-	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.<br /><br /><a href="index.php">Click to go back to main page.</a>";
+	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.<br /><br /><a href=\"index.php\">Click to go back to main page.</a>";
 	exit();
 }
 

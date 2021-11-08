@@ -6,6 +6,8 @@
 url = "https://example.com/triage/"
 auto-refresh = 300
 pass = "MyPa$$w0rd"
+admin_pass = "AdminP@$$w0rd"
+shift_length = 8
 
 [db]
 ; Can't be changed without breaking editor, currently
