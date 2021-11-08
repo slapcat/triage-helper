@@ -32,7 +32,7 @@ if (isset($_POST['text']))
     header('Location: index.php');
     die();
     } else {
-    echo '<br />Someone has stolen your session. Please try again to make your edits.';
+    echo '<br />Someone has stolen your session. Please try again to make your edits.<br /><br /><a href="index.php">Click to go back.</a>"';
     exit();
     }
 }
@@ -48,8 +48,10 @@ if (isset($_POST['text']))
 
 if ($file == 'schedule.csv' || $file == 'duties.csv') {
 	$file = $_GET['f'];
+} elseif ($file == 'settings.ini' && str_contains($_SESSION['auth'], 'admin')) {
+	$file = $_GET['f'];
 } else {
-	echo 'You cannot edit that file.';
+	echo 'You cannot edit that file.<br /><br /><a href="index.php">Click to go back.</a>';
 	exit();
 }
 
@@ -65,7 +67,7 @@ if (!file_exists($file . '.lock')) {
         $text = file_get_contents($file);
         file_put_contents($file . '.lock', $_SESSION['auth']);
 } else {
-	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.";
+	echo "<br />This file is being edited by another user. <a href=\"?f=$file&c=force\">Click here</a> to edit anyway.<br /><br /><b>IMPORTANT:</b> Please only use the above option if absolutely necessary. Other users edits will be lost.<br /><br /><a href="index.php">Click to go back to main page.</a>";
 	exit();
 }
 

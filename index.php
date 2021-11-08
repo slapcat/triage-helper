@@ -23,9 +23,9 @@ if (empty($pass)) {
 	die();
 
 } elseif ($pass == $config["app"]["pass"]) {
-
 	$_SESSION['auth'] = session_id();
-
+} elseif ($pass == $config["app"]["admin_pass"]) {
+	$_SESSION['auth'] = 'admin:' . session_id();
 } else {
 
 	echo '<body style="background-color:red"><center><h1 style="color:white;margin-top:20px;font-family:Helvetica;">WRONG PASSWORD</h1><br /><br /><tt><a href="index.php">[ click here to go back ]</a></tt></center></body>';
@@ -361,8 +361,10 @@ foreach ($agents as $name => $info) {
     <a href="daily-schedule.php">Daily Schedule</a>
     <a href="<?php echo 'editor.php?f=' . $config["db"]["schedule"] ?>">Edit Schedule</a>
     <a href="<?php echo 'editor.php?f=' . $config["db"]["duties"] ?>">Edit Duties</a>
+    <a href="<?php echo 'editor.php?f=settings.ini' ?>">Settings</a>
     <a href="log.php" target="_blank">Replacement Log</a>
     <a class="critical" onClick="Confirm()">Reset Duties</a>
+    <a href="logout.php">Logout</a>
   </div>
 </div></div>
 
