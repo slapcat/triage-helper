@@ -73,7 +73,9 @@ _Ensure that the numbers on the left-hand side always count sequentially (1, 2, 
 
 ### Reset Duties
 
-There is a red button in the UI to reset duties. This option will reset all substitutions from the day's duties. It can be used in cases where a person was marked accidentally marked as off and they need to be returned to their scheduled duty. Note that any substitutions that occured already will be reset and a new replacment agent may be selected to fill in after the reset.
+There is a red button in the UI to reset duties. This option will reset all substitutions from the day's duties. It can be used in cases where a person was accidentally marked as off and they need to be returned to their scheduled duty. 
+
+Note that any substitutions that occured already will be reset and a new replacment agent may be selected to fill in after the reset.
 
 ### Configuration
 
