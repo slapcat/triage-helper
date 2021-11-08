@@ -71,6 +71,10 @@ It is easy to add, remove, or modify duties from `settings.ini`. Simply change t
 
 _Ensure that the numbers on the left-hand side always count sequentially (1, 2, 3, etc)._ To remove a job, delete the respective line from this file and then remove all entries for it in `duties.csv`. The job number listed here will correspond to the number in the third colum of the duties file.
 
+### Reset Duties
+
+There is a red button in the UI to reset duties. This option will reset all substitutions from the day's duties. It can be used in cases where a person was marked accidentally marked as off and they need to be returned to their scheduled duty. Note that any substitutions that occured already will be reset and a new replacment agent may be selected to fill in after the reset.
+
 ### Configuration
 
 Most of the configuration options in `settings.ini` are self-explanatory. Here is some additional information on some of the parameters:
