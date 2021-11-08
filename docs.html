@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>Triage Helper</title>
+</head>
+<style>
+code { background-color: white; }
+</style>
+<body style="margin:20px 10%;font-size:2em;background-color:lightgrey;">
+<div class="content">
+<h1 id="triage-helper">Triage Helper</h1>
+<p>Triage Helper is a tool to assist with sorting and assigning support tickets in high-volume help desk environments. It determines who is available to work tickets, lists each agent&#39;s expertise, links available agents&#39; names to their current tickets, and highlights agents that are out of the office.</p>
+<h2 id="features">Features</h2>
+<p>This tool currently supports:</p>
+<ul>
+<li>List available agents and assigned duties</li>
+<li>Automatically replace agents for duties when they are out</li>
+<li>Filter agents by expertise</li>
+<li>Highlight agents who are on planned leave or out unexpectedly</li>
+<li>Time off integrated with SharePoint calendar</li>
+<li>Compatible with Microsoft Teams</li>
+</ul>
+<h2 id="screenshot">Screenshot</h2>
+<p><img src="screenshot.png" alt="Screenshot"></p>
+<h2 id="usage">Usage</h2>
+<h3 id="mark-an-agent-as-out">Mark an agent as out</h3>
+<p>Navigate to the schedule either from the web app or locally. Place a <code>#</code> right before the name of the agent and save the file:</p>
+<pre><code>#Tom,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">6</span>,<span class="hljs-number">0</span>,agent%<span class="hljs-number">3</span>A,<span class="hljs-string">"Billing"</span>,<span class="hljs-string">"11/3,"</span>
+</code></pre><p>The agent will be listed as out for the rest of the day. The setting will be automatically reset daily (or however often you have it configured) by <code>scheduler.php</code>. </p>
+<h3 id="add-an-agent">Add an agent</h3>
+<p>To add a brand new agent, create a new line in the <code>schedule.csv</code> file and insert their data into the respective columns:</p>
+<pre><code>name,mon,tues,wed,thurs,fri,sat,sun,time,time (weekend),agentID,expertise,time off
+Tom,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">6</span>,<span class="hljs-number">0</span>,agent%<span class="hljs-number">3</span>A,<span class="hljs-string">"Billing"</span>,<span class="hljs-string">"11/3,"</span>
+...
+New Agent, ...
+</code></pre><ul>
+<li><code>name</code> - This can contain spaces, but must be written the same in the <code>duties.csv</code> file and in any SharePoint calendar events.</li>
+<li>days of the week - Use 1 for days the agent is on shift and 0 for days off.</li>
+<li><code>time</code> - The start hour (in 24-hour time) of the agent&#39;s weekday shifts. Decimals can be set, but the script will only calculate the time to the nearest half-hour.</li>
+<li><code>time (weekend)</code> - Same as above, but strictly for weekend days.</li>
+<li><code>agentID</code> - The ID number for an agent, which is required when linking an agent&#39;s name to your ticketing system. The URL to the ticketing system should be configured in <code>settings.ini</code> if you are using this option.</li>
+<li><code>expertise</code> - A comma-separated list of topics of expertise. Be sure to include the items in-between double quotes.</li>
+<li><code>time off</code> - Dates in MM/DD format for when the agent will be off. This can be manually updated, but is mainly used in conjunction with a SharePoint calendar.</li>
+</ul>
+<h3 id="remove-an-agent">Remove an agent</h3>
+<p>To remove an agent, simply delete their entire row from <code>schedule.csv</code>. You should also remove mentions of their name from <code>duties.csv</code>, although it will not harm anything if the name stays there until there is a replacement.</p>
+<p><em>TIP:</em> If you want the script to automatically select other agents to fill in for the removed agent&#39;s duties (a different agent for every shift), leave the removed agent&#39;s name on a row by itself in <code>schedule.csv</code> with a <code>#</code> before it:</p>
+<p><code>#Former Agent,</code></p>
+<p>Any assigned duties listed for this name in <code>duties.csv</code> will then be automatically replaced at the start of the shift.</p>
+<h3 id="add-remove-a-duty">Add/remove a duty</h3>
+<p>It is easy to add, remove, or modify duties from <code>settings.ini</code>. Simply change the default names or add new jobs there:</p>
+<pre><code>[jobs]
+<span class="hljs-number">1</span> = <span class="hljs-string">"phones"</span>
+...
+<span class="hljs-number">5</span> = <span class="hljs-string">"new job"</span>
+</code></pre><p><em>Ensure that the numbers on the left-hand side always count sequentially (1, 2, 3, etc).</em> To remove a job, delete the respective line from this file and then remove all entries for it in <code>duties.csv</code>. The job number listed here will correspond to the number in the third colum of the duties file.</p>
+<h3 id="configuration">Configuration</h3>
+<p>Most of the configuration options in <code>settings.ini</code> are self-explanatory. Here is some additional information on some of the parameters:</p>
+<ul>
+<li><code>admin_pass</code> - This password grants the same access as the regular <code>pass</code> that is set, but with additional access to the <code>settings.ini</code> file from the web app.</li>
+<li><code>shift_length</code> - The number of hours agents will be listed as available from their start time on any given day.</li>
+<li><code>duration</code> - This table of parameters maps directly to the <code>jobs</code> section, based on the number on the left-hand side. The duration is the number of hours that the agent will be assigned to that job for. Start times and days are set in <code>duties.csv</code>.</li>
+<li><code>recipient</code> - This person or mailing list will receive notifications about when an agent is substituted for a duty. It is not used for anything else.</li>
+</ul>
+<h2 id="topology">Topology</h2>
+<p>All data concerning agents&#39; schedules and expertise are stored in <code>schedule.csv</code>. The main script, <code>index.php</code>, reads this CSV file and determines if an agent is either on shift now or is within 2 hours of coming on shift.</p>
+<p>It also checks to see if they are off by searching for a <code>#</code> in front of their name. The <code>#</code> can either be added manually or will be automatically added by <code>scheduler.php</code> if the agent has pre-planned time off.</p>
+<p>The following additional scripts help with scheduling:</p>
+<ul>
+<li><p><code>scheduler.php</code> - Resets which agents are off for the day by removing all <code>#</code> before their names. It then checks which agents are off today and places the <code>#</code> before their name so that <code>index.php</code> interprets them as out for the day.</p>
+</li>
+<li><p><code>parser.php</code> - Scans a mailbox for alerts from a SharePoint calendar. Parses the email to determine which agent it is for and the dates they have requested off. It then adds or removes these dates (depending on the request) to <code>agents.db</code>. This script currently only supports events that are added or deleted to the calendar, not changed.</p>
+</li>
+</ul>
+<h2 id="roadmap">Roadmap</h2>
+<p>To be added in the future:</p>
+<ul>
+<li>Integrate with Freshdesk API (list open tickets, CSAT, etc.)</li>
+<li>Better database management</li>
+</ul>
+</div>
+</body>
+</html>

@@ -120,7 +120,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 
 	// DEFINE IN & OUT TIMES
 	$buffertime = (floatval($data[$timein]) - 2);
-	$timeout = (floatval($data[$timein]) + 7.5); // remove name an hour before end of shift
+	$timeout = (floatval($data[$timein]) + $config["app"]["shift_length"]); // remove name an hour before end of shift
 	$tomorrow = (int)$weekday + 1;
 	$timein_tmrw = floatval($timein);
 	if ($tomorrow == 8) {
@@ -363,6 +363,7 @@ foreach ($agents as $name => $info) {
     <a href="<?php echo 'editor.php?f=' . $config["db"]["duties"] ?>">Edit Duties</a>
     <a href="<?php echo 'editor.php?f=settings.ini' ?>">Settings</a>
     <a href="log.php" target="_blank">Replacement Log</a>
+    <a href="docs.html" target="_blank">Documentation</a>
     <a class="critical" onClick="Confirm()">Reset Duties</a>
     <a href="logout.php">Logout</a>
   </div>
