@@ -52,7 +52,7 @@ New Agent, ...
 
 To remove an agent, simply delete their entire row from `schedule.csv`. You should also remove mentions of their name from `duties.csv`, although it will not harm anything if the name stays there until there is a replacement.
 
-_TIP:_ If you want the script to automatically select other agents to fill in for the removed agent's duties (a different agent for every shift), leave the removed agent's name on a row by itself in `schedule.csv` with a `#` before it:
+__TIP:__ If you want the script to automatically select other agents to fill in for the removed agent's duties (a different agent for every shift), leave the removed agent's name on a row by itself in `schedule.csv` with a `#` before it:
 
 `#Former Agent,`
 
@@ -69,7 +69,7 @@ It is easy to add, remove, or modify duties from `settings.ini`. Simply change t
 5 = "new job"
 ```
 
-_Ensure that the numbers on the left-hand side always count sequentially (1, 2, 3, etc)._ To remove a job, delete the respective line from this file and then remove all entries for it in `duties.csv`. The job number listed here will correspond to the number in the third colum of the duties file.
+__Ensure that the numbers on the left-hand side always count sequentially (1, 2, 3, etc).__ To remove a job, delete the respective line from this file and then remove all entries for it in `duties.csv`. The job number listed here will correspond to the number in the third colum of the duties file.
 
 ### Reset Duties
 
