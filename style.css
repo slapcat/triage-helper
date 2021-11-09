@@ -175,4 +175,6 @@ a:hover {
 
 #agent-table { display: block; }
 
-
+table {
+	font-size: .5em;
+}

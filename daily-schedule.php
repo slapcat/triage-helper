@@ -12,16 +12,12 @@ if ($_SESSION['auth'] == "") {
 </head>
 
 <body>
-<div id="agents" style="float:right;">
+<div id="agents">
 <?php
+$config = parse_ini_file("settings.ini", TRUE);
 
 // DEFINE VARIABLES
 $row = 1;
-$names = "";
-$phones = "";
-$triage = "";
-$chat = "";
-$sweeper = "";
 
 // DEFINE TIMES
 $weekday = date( 'N' );  // Mon (1) - Sun (7)
@@ -32,11 +28,16 @@ $file = 'lineups/' . date('M-j-Y') . '.csv';
 if (isset($_POST['day'])) {
 	$weekday = date('w', strtotime($_POST['day'])); // SUN = 0
 	if ($weekday == 0) { $weekday = 7; }
-	
+
 	$file = 'duties.csv';
 
 	$date = DateTime::createFromFormat('Y-m-d', $_POST['day']);
 	$date = $date->format('F j, Y');
+}
+
+// DEFINE ARRAYS
+foreach ($config["jobs"] as $num => $job) {
+	if (isset($job)) { $$job = array(); }
 }
 
 
@@ -46,39 +47,26 @@ if (($handle = fopen($file, "r")) !== FALSE) {
         $num = count($data);
         $row++;
 
-	//phones
-	if ($data[0] == $weekday && $data[2] == 1) {
-		$names = $data[3];
-		$names = rtrim($names, " "); // remove trailing comma
-		$names = rtrim($names, ","); // remove trailing comma
-		$names = str_replace(",", ", ", $names);
-		$names = rtrim($names, ","); // remove trailing comma
-		$phones = $phones . '<td>' . $names . '</td>';
-	//triage
-	} elseif ($data[0] == $weekday && $data[2] == 2) {
-		$names = $data[3];
-		$names = rtrim($names, " "); // remove trailing comma
-		$names = rtrim($names, ","); // remove trailing comma
-		$names = str_replace(",", ", ", $names);
-		$triage = $triage . '<td>' . $names . '</td>';
-	//chats
-	} elseif ($data[0] == $weekday && $data[2] == 3) {
-		$names = $data[3];
-		$names = rtrim($names, " "); // remove trailing comma
-		$names = rtrim($names, ","); // remove trailing comma
-		$names = str_replace(",", ", ", $names);
-		$chat = $chat . '<td>' . $names . '</td>';
-	//sweeper
-	} elseif ($data[0] == $weekday && $data[2] == 4) {
-		$names = $data[3];
-		$names = rtrim($names, " "); // remove trailing comma
-		$names = rtrim($names, ","); // remove trailing comma
-		$names = str_replace(",", ", ", $names);
-		$sweeper = $sweeper . '<td>' . $names . '</td>';
+	if ($data[0] == $weekday) {
+	$start = gmdate('g:i a', floor($data[1] * 3600));
+	$end = gmdate('g:i a', floor(($data[1] + $config["duration"][$data[2]]) * 3600));
+
+	$names = $data[3];
+	$names = rtrim($names, " "); // remove trailing comma
+	$names = rtrim($names, ","); // remove trailing comma
+	$names = str_replace(",", ", ", $names);
+	$names = rtrim($names, ","); // remove trailing comma
+
+	$job = $config["jobs"][$data[2]];
+	$$job["$start to $end"] = $names;
+
 	}
    }
    fclose($handle);
 }
+
+$range = "";
+$agents = "";
 ?>
 <h1>Duties for <?php echo $date; ?></h1>
 <form action="daily-schedule.php" method="post">
@@ -86,70 +74,20 @@ if (($handle = fopen($file, "r")) !== FALSE) {
   <input type="submit" value="change date">
 </form>
 <center>
+<?php
+foreach ($config["jobs"] as $num => $job) {
+	echo "<table><caption>$job</caption><tr><th></th>";
 
-<table>
-<caption>Phones</caption>
-<tr>
-<th></th>
-<th>6am - 10am</th>
-<th>8am - 12pm</th>
-<th>10am - 2pm</th>
-<th>12pm - 4pm</th>
-<th>2pm - 6pm</th>
-<th>4pm - 8pm</th>
-</tr>
-<tr>
-<th>Agents</th>
-<?php echo $phones; ?>
-</tr>
-</table>
+	foreach ($$job as $time => $names) {
+		$range .= "<th>$time</th>";
+		$agents .= "<td>$names</td>";
+	}
+	echo "$range</tr><tr><th>Agents</th>$agents</tr></table><br />";
 
-<br />
-
-<table style="float:left;width:45%;">
-<caption>Chat</caption>
-<tr>
-<th></th>
-<th>8am - 2pm</th>
-<th>10am - 4pm</th>
-<th>2pm - 8pm</th>
-</tr>
-<tr>
-<th>Agents</th>
-<?php echo $chat; ?>
-</tr>
-</table>
-
-<table style="width:45%;float:right;">
-<caption>Triage</caption>
-<tr>
-<th></th>
-<th>6am - 2:30pm</th>
-<th>8am - 4:30pm</th>
-<th>11:30am - 8pm</th>
-</tr>
-<tr>
-<th>Agents</th>
-<?php echo $triage; ?>
-</tr>
-</table>
-
-<br /><br />
-
-<table>
-<caption>Sweeper</caption>
-<tr>
-<th></th>
-<th>8am - 4:30pm</th>
-<th>10am - 6:30pm</th>
-<th>11:30am - 8pm</th>
-</tr>
-<tr>
-<th>Agents</th>
-<?php echo $sweeper; ?>
-</tr>
-</table>
-
+	$range = "";
+	$agents = "";
+}
+?>
 </center>
 
 <br />
