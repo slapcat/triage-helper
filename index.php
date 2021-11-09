@@ -113,6 +113,7 @@ foreach ($config["jobs"] as $num => $job) {
 
 // CHECK THE SCHEDULE
 $row=1;
+$offNow = TRUE;
 
 if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -121,7 +122,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 
 	// DEFINE IN & OUT TIMES
 	$buffertime = (floatval($data[$timein]) - $config["app"]["preshift_buffer"]);
-	$timeout = (floatval($data[$timein]) + $config["app"]["shift_length"]); // remove name an hour before end of shift
+	$timeout = (floatval($data[$timein]) + $config["app"]["shift_length"]);
 	$tomorrow = (int)$weekday + 1;
 	$timein_tmrw = floatval($timein);
 	if ($tomorrow == 8) {
@@ -135,6 +136,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 		if (substr($data[0], 0, 1) !== '#') {
 			$agents[$data[0]] = array($data[11], $data[10]);
 
+			$offNow = FALSE;
 			foreach ($config["jobs"] as $job) {
 				if (in_array($data[0], $$job)) {
 					$agents[$data[0]][] = 1;
@@ -147,7 +149,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 	}
 
 	// CHECK IF WORKING TOMORROW MORNING
-	elseif ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
+	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
 
 		// CHECK IF SCHEDULED OUT FOR TOMORROW
 		if (strpos($dates[12], $tmrwdate) !== false) {
@@ -162,16 +164,23 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 		}
 	}
 
-
 	// CHECK IF OUT FOR THE DAY
-	elseif (substr($data[0], 0, 1) == '#') {
+	if (substr($data[0], 0, 1) == '#') {
 		$out[substr($data[0], 1)] = $data[10];
+		$offNow = FALSE;
 	}
 
 	// NONE OF THE ABOVE - AGENT IS OFF SHIFT - exclude first row
-	elseif ($data[0] != "name") {
+	if ($offNow && $data[0] != "name") {
 		$off[] = $data[0];
 	}
+
+	// REMOVE AGENTS FROM LIST ACCORDING TO BUFFER
+	if ($hour > ($timeout - $config["app"]["postshift_buffer"])) {
+		unset($agents[$data[0]]);
+	}
+
+	$offNow = TRUE; // reset
 
     }
     fclose($handle);
@@ -184,8 +193,7 @@ if (!empty($out)) {
 
 	foreach ($config["jobs"] as $num => $job) {
 		$replace[$job] = array_intersect($$job, array_keys($out));
-		// replace off --------
-		//$replace[$job] = array_intersect($$job, $off);
+		$replace[$job] = array_intersect($$job, $off);
 	}
 
 	// LOGGING
