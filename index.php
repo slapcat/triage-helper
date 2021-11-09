@@ -49,11 +49,12 @@ skip:
 $row = 1;
 $agents = array();
 $out = array();
+$off = array();
 $active = "";
 $columns = "";
 
 // DEFINE TIMES
-$weekday = date( 'N' );  // Mon (1) - Sun (7) test
+$weekday = date( 'N' );  // Mon (1) - Sun (7)
 $hour = date( 'G' ); // 24hr digit
 if (date ( 'i' ) > 29) {
 	$hour = $hour + .5;
@@ -119,7 +120,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
         $row++;
 
 	// DEFINE IN & OUT TIMES
-	$buffertime = (floatval($data[$timein]) - 2);
+	$buffertime = (floatval($data[$timein]) - $config["app"]["preshift_buffer"]);
 	$timeout = (floatval($data[$timein]) + $config["app"]["shift_length"]); // remove name an hour before end of shift
 	$tomorrow = (int)$weekday + 1;
 	$timein_tmrw = floatval($timein);
@@ -146,7 +147,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 	}
 
 	// CHECK IF WORKING TOMORROW MORNING
-	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
+	elseif ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
 
 		// CHECK IF SCHEDULED OUT FOR TOMORROW
 		if (strpos($dates[12], $tmrwdate) !== false) {
@@ -163,10 +164,14 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 
 
 	// CHECK IF OUT FOR THE DAY
-	if (substr($data[0], 0, 1) == '#') {
+	elseif (substr($data[0], 0, 1) == '#') {
 		$out[substr($data[0], 1)] = $data[10];
 	}
 
+	// NONE OF THE ABOVE - AGENT IS OFF SHIFT - exclude first row
+	elseif ($data[0] != "name") {
+		$off[] = $data[0];
+	}
 
     }
     fclose($handle);
@@ -178,7 +183,9 @@ if (!empty($out)) {
 	$replace = array();
 
 	foreach ($config["jobs"] as $num => $job) {
-	$replace[$job] = array_intersect($$job, array_keys($out));
+		$replace[$job] = array_intersect($$job, array_keys($out));
+		// replace off --------
+		//$replace[$job] = array_intersect($$job, $off);
 	}
 
 	// LOGGING
@@ -243,13 +250,13 @@ if (!empty($out)) {
 				unset($agents[$ringer]);
 				replaceAgent($name, $ringer, $task, $file);
 				$log[$task][$name]["Ringer"] = $ringer;
+				$ringer = "";
 			} elseif ($agents != NULL) {
 				$replacement = array_key_first($agents);
 				$$task[] = $replacement;
 				unset($agents[$replacement]);
 				replaceAgent($name, $replacement, $task, $file);
 				$log[$task][$name]["ReplacementAgent"] = $replacement;
-
 			} else {
 				$replacement = array_key_first($allAgents);
 				$$task[] = $replacement;

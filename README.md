@@ -86,6 +86,15 @@ Most of the configuration options in `settings.ini` are self-explanatory. Here i
 - `duration` - This table of parameters maps directly to the `jobs` section, based on the number on the left-hand side. The duration is the number of hours that the agent will be assigned to that job for. Start times and days are set in `duties.csv`.
 - `recipient` - This person or mailing list will receive notifications about when an agent is substituted for a duty. It is not used for anything else.
 
+### Cron
+
+The following are the recommended cron jobs to run the necessary scripts for resetting out agents and parsing SharePoint notifications:
+
+```
+0 4 * * * sudo -u www-data php /path/to/scheduler.php
+0 */8 * * * sudo -u www-data php /path/to/parser.php
+```
+
 ## Topology
 
 All data concerning agents' schedules and expertise are stored in `schedule.csv`. The main script, `index.php`, reads this CSV file and determines if an agent is either on shift now or is within 2 hours of coming on shift.
