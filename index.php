@@ -202,9 +202,16 @@ if (!empty($out)) {
 	$log["Out"] = $replace;
 	$log["AvailableAgents"] = array_keys($agents);
 
+	// SHUFFLE AND BACKUP ACTIVE AGENTS LIST
 	$allAgents = $agents;
 	shuffle_assoc($agents);
-	shuffle_assoc($allAgents);
+
+	// REMOVE [am] PEOPLE FROM CONSIDERATION
+	foreach ($agents as $agent => $info) {
+		if (str_contains($agent, '[am]')) {
+			unset($agents[$agent]);
+		}
+	}
 
 	foreach ($replace as $task => $names) {
 
@@ -266,6 +273,7 @@ if (!empty($out)) {
 				replaceAgent($name, $replacement, $task, $file);
 				$log[$task][$name]["ReplacementAgent"] = $replacement;
 			} else {
+				shuffle_assoc($allAgents);
 				$replacement = array_key_first($allAgents);
 				$$task[] = $replacement;
 				unset($agents[$replacement]);
