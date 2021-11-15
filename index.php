@@ -193,7 +193,13 @@ if (!empty($out)) {
 
 	foreach ($config["jobs"] as $num => $job) {
 		$replace[$job] = array_intersect($$job, array_keys($out));
-		$replace[$job] = array_intersect($$job, $off);
+
+		// NEED TO REARRANGE AND ADD OUTSIDE OF THIS IF STATEMENT
+		// B/C WONT TRIGGER IF NO ONE IS OUT
+		// SOL: CHANGE BELWO TO A CUSTOM FUNCTION, add as part of replaceAgent
+		// then loop through both replace and replaceOff
+		//$replaceOff = array();
+//		$replaceOff[$job] = array_intersect($$job, $off);
 	}
 
 	// LOGGING
@@ -440,3 +446,10 @@ columns:[
 </div>
 </body>
 </html>
+<?php
+echo '<!--';
+var_dump($replace);
+var_dump($chat);
+var_dump(array_keys($out));
+echo '-->';
+?>
