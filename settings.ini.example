@@ -8,6 +8,10 @@ auto-refresh = 300
 pass = "MyPa$$w0rd"
 admin_pass = "AdminP@$$w0rd"
 shift_length = 8
+; Hours before an agent's start time that they will be displayed in the active list:
+preshift_buffer = 2
+postshift_buffer = 1
+
 
 [db]
 ; Can't be changed without breaking editor, currently
@@ -42,3 +46,4 @@ smtp_port = 587
 smtp_user = "user@gmail.com"
 smtp_pass = "password"
 recipient = "support-list@example.com"
+s
