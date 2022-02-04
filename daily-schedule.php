@@ -47,20 +47,20 @@ if (($handle = fopen($file, "r")) !== FALSE) {
         $num = count($data);
         $row++;
 
-	if ($data[0] == $weekday) {
+	if (is_numeric($data[1])) {
 	$start = gmdate('g:i a', floor($data[1] * 3600));
-	$end = gmdate('g:i a', floor(($data[1] + $config["duration"][$data[2]]) * 3600));
+	$end = gmdate('g:i a', floor(($data[1] + $config["duration"][$data[0]]) * 3600));
 
-	$names = $data[3];
+	$names = $data[$weekday + 1];
 	$names = rtrim($names, " "); // remove trailing comma
 	$names = rtrim($names, ","); // remove trailing comma
 	$names = str_replace(",", ", ", $names);
 	$names = rtrim($names, ","); // remove trailing comma
 
-	$job = $config["jobs"][$data[2]];
+	$job = $config["jobs"][$data[0]];
 	$$job["$start to $end"] = $names;
-
 	}
+
    }
    fclose($handle);
 }

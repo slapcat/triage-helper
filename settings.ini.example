@@ -1,17 +1,15 @@
 ; Triage Helper v2.0
 ; Developed by Jake Nabasny
-; https://jake.nabasny.com
 
 [app]
 url = "https://example.com/triage/"
 auto-refresh = 300
-pass = "MyPa$$w0rd"
-admin_pass = "AdminP@$$w0rd"
-shift_length = 8
+pass = "p@$$w0rd"
+admin_pass = "@DM|N_P@$$w0rd"
+shift_length = 9
 ; Hours before an agent's start time that they will be displayed in the active list:
 preshift_buffer = 2
 postshift_buffer = 1
-
 
 [db]
 ; Can't be changed without breaking editor, currently
@@ -20,8 +18,8 @@ duties = "duties.csv"
 
 [tickets_URL]
 ; Pre- and post-pend URL to agent ID:
-pre = "https://ticketing_system.com/a/tickets/?agent="
-post = "&sort=dec"
+pre = "https://ticket-system.com/a/tickets/?agent="
+post = "&q[]=status%3A%5B0%5D&ref=256627"
 
 [jobs]
 1 = "phones"
@@ -31,19 +29,18 @@ post = "&sort=dec"
 
 [duration]
 1 = 4
-2 = 6
-3 = 8.5
+2 = 8.5
+3 = 6
 4 = 8.5
 
 [email]
 ; For SharePoint integration. Send calendar notifications to this mailbox:
 imap = "{imap.gmail.com:993/imap/ssl}INBOX"
-imap_user = "user@gmail.com"
-imap_pass = "password"
+imap_user = "triage-email-account@gmail.com"
+imap_pass = "pass"
 ; For notifications about substitutions when an agent is off:
 smtp_host = "smtp.gmail.com"
 smtp_port = 587
-smtp_user = "user@gmail.com"
-smtp_pass = "password"
-recipient = "support-list@example.com"
-s
+smtp_user = "triage-email-account@gmail.com"
+smtp_pass = "pass"
+recipient = "triage-DL@example.com"

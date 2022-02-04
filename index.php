@@ -71,15 +71,10 @@ $file = './lineups/' . date('M-j-Y') . '.csv';
 if (!file_exists($file)) {
 
 $contents = file_get_contents($config['db']['duties']);
-$pattern = "/^$weekday.*\$/m";
 
-if(preg_match_all($pattern, $contents, $matches)){
-        $duties = implode("\n", $matches[0]);
-} else {
-        // not a weekday
-}
+//$duties = implode("\n", $contents);
 
-file_put_contents($file, $duties);
+file_put_contents($file, $contents);
 
 }
 
@@ -92,12 +87,14 @@ if (($handle = fopen($file, "r")) !== FALSE) {
 	foreach ($config["jobs"] as $num => $job) {
 	if (!isset($$job)) { $$job = ""; }
 
-	if ($data[0] == $weekday && $hour >= $data[1] && $data[2] == $num) {
+	if ($data[0] == $num && $hour >= $data[1]) {
 
 		$endshift = $data[1] + $config['duration'][$num];
 		if ($hour < $endshift) {
-			$$job .= $data[3];
+			$$job .= $data[$weekday + 1];
 		}
+
+
 	}
 	}
     }
@@ -172,11 +169,11 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 
 	// NONE OF THE ABOVE - AGENT IS OFF SHIFT - exclude first row
 	if ($offNow && $data[0] != "name") {
-		$off[] = $data[0];
+		$off[$data[0]] = $data[10];
 	}
 
 	// REMOVE AGENTS FROM LIST ACCORDING TO BUFFER
-	if ($hour > ($timeout - $config["app"]["postshift_buffer"])) {
+	if ($hour >= ($timeout - $config["app"]["postshift_buffer"])) {
 		unset($agents[$data[0]]);
 	}
 
@@ -186,21 +183,21 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
     fclose($handle);
 }
 
+
+
+$outAndOff = array_merge($out, $off/*, $arrayN, $arrayN*/);
+
+$replace = array();
+
+foreach ($config["jobs"] as $num => $job) {
+
+	$replace[$job] = array_intersect($$job, array_keys($outAndOff));
+
+}
+
 // REPLACE AGENTS WHO ARE OUT FOR DUTIES
-if (!empty($out)) {
+if (!empty($replace)) {
 
-	$replace = array();
-
-	foreach ($config["jobs"] as $num => $job) {
-		$replace[$job] = array_intersect($$job, array_keys($out));
-
-		// NEED TO REARRANGE AND ADD OUTSIDE OF THIS IF STATEMENT
-		// B/C WONT TRIGGER IF NO ONE IS OUT
-		// SOL: CHANGE BELWO TO A CUSTOM FUNCTION, add as part of replaceAgent
-		// then loop through both replace and replaceOff
-		//$replaceOff = array();
-//		$replaceOff[$job] = array_intersect($$job, $off);
-	}
 
 	// LOGGING
 	$log = array();
@@ -301,12 +298,18 @@ function replaceAgent($name, $rand_agent, $task, $file)
 {
 global $weekday;
 global $config;
+global $hour;
 $duties = file_get_contents($file);
 $task_num = array_search($task, $config["jobs"]);
 
-$pattern = '/(' . $weekday . ',.*,' . $task_num . ',.*)' . $name . '(.*)/i';
+$pattern = '/(' . $task_num . ',.*)' . $name . '(.*)/i';
 $replace = '$1' . $rand_agent . '$2';
 $new = preg_replace($pattern, $replace, $duties);
+
+while ($new !== preg_replace($pattern, $replace, $new)) {
+	$new = preg_replace($pattern, $replace, $new);
+}
+
 file_put_contents($file, $new);
 
 $message = "<html><body style=\"font-family:Helvetica,Arial;font-size:18px;\"><h1>AGENT REPLACEMENT</h1><b>$name</b> has been replaced by <b><u>$rand_agent</u></b> for <i>$task</i>.<br /><br />Thank you for helping out the team!<br /><br />Find new shift information here: <a href=\"" . $config["app"]["url"] . "daily-schedule.php\">Daily Schedule</a></body></html>";
@@ -449,7 +452,6 @@ columns:[
 <?php
 echo '<!--';
 var_dump($replace);
-var_dump($chat);
-var_dump(array_keys($out));
+var_dump($outAndOff);
 echo '-->';
 ?>
