@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ALL & ~E_WARNING);
 $config = parse_ini_file("settings.ini", TRUE);
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -146,7 +147,7 @@ if (($handle = fopen($config["db"]["schedule"], "r")) !== FALSE) {
 	}
 
 	// CHECK IF WORKING TOMORROW MORNING
-	if ($data[$tomorrow] == 1 && $hour >= 18 && ($data[$timein_tmrw] == 6 || $data[$timein_tmrw] == 8)) {
+	if ($data[$tomorrow] == 1 && $hour >= $config["app"]["am_agents_appear"] && $data[$timein_tmrw] <= 8) {
 
 		// CHECK IF SCHEDULED OUT FOR TOMORROW
 		if (strpos($dates[12], $tmrwdate) !== false) {
@@ -215,6 +216,7 @@ if (!empty($replace)) {
 			unset($agents[$agent]);
 		}
 	}
+	$availableAgents = $agents;
 
 	foreach ($replace as $task => $names) {
 
@@ -276,8 +278,8 @@ if (!empty($replace)) {
 				replaceAgent($name, $replacement, $task, $file);
 				$log[$task][$name]["ReplacementAgent"] = $replacement;
 			} else {
-				shuffle_assoc($allAgents);
-				$replacement = array_key_first($allAgents);
+				shuffle_assoc($availableAgents);
+				$replacement = array_key_first($availableAgents);
 				$$task[] = $replacement;
 				unset($agents[$replacement]);
 				replaceAgent($name, $replacement, $task, $file);
@@ -449,9 +451,3 @@ columns:[
 </div>
 </body>
 </html>
-<?php
-echo '<!--';
-var_dump($replace);
-var_dump($outAndOff);
-echo '-->';
-?>
