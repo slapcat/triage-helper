@@ -285,9 +285,14 @@ if (!empty($replace)) {
 				replaceAgent($name, $replacement, $task, $file);
 				$log[$task][$name]["ReplacementAgent"] = $replacement;
 			}
+
+			// WRITE LOG
+			/*
 			$oldLog = file_get_contents($logfile);
 			file_put_contents($logfile, "\n[-------- " . $name . " ----- " . $task . " ------- " . date(DATE_RFC2822) . " ------]\n" . var_export($log, TRUE) . $oldLog);
 			$log = array();
+			*/
+
 		}
 	}
 
@@ -396,8 +401,8 @@ foreach ($agents as $name => $info) {
     <a href="<?php echo 'editor.php?f=' . $config["db"]["schedule"] ?>">Edit Schedule</a>
     <a href="<?php echo 'editor.php?f=' . $config["db"]["duties"] ?>">Edit Duties</a>
     <a href="<?php echo 'editor.php?f=settings.ini' ?>">Settings</a>
-    <a href="log.php" target="_blank">Replacement Log</a>
-    <a href="docs.html" target="_blank">Documentation</a>
+    <!-- a href="log.php" target="_blank">Replacement Log</a>
+    <a href="docs.html" target="_blank">Documentation</a -->
     <a class="critical" onClick="Confirm()">Reset Duties</a>
     <a href="logout.php">Logout</a>
   </div>
