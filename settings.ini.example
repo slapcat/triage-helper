@@ -10,6 +10,9 @@ shift_length = 9
 ; Hours before an agent's start time that they will be displayed in the active list:
 preshift_buffer = 2
 postshift_buffer = 1
+; Hour when AM people (starting at 8 or before) show up in list in evening
+; Set to 24 to disable
+am_agents_appear = 18
 
 [db]
 ; Can't be changed without breaking editor, currently

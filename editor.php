@@ -46,9 +46,7 @@ if (isset($_POST['text']))
 <body>
 <?php
 
-if ($file == 'schedule.csv' || $file == 'duties.csv') {
-	$file = $_GET['f'];
-} elseif ($file == 'settings.ini' && str_contains($_SESSION['auth'], 'admin')) {
+if (($file == 'schedule.csv' || $file == 'duties.csv' || $file == 'settings.ini') && str_contains($_SESSION['auth'], 'admin')) {
 	$file = $_GET['f'];
 } else {
 	echo 'You cannot edit that file.<br /><br /><a href="index.php">Click to go back.</a>';
